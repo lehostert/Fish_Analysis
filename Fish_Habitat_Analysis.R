@@ -2,33 +2,51 @@ library(tidyverse)
 library(randomForest)
 library(vegan)
 
-alt_df <- readxl::read_excel("C:/Users/lhostert/Desktop/Fish_Habitat_Characteristics_New.xlsx", sheet = 1)
-new_df <- readxl::read_excel("C:/Users/lhostert/Desktop/Fish_Habitat_Characteristics.xlsx", sheet = 1)
-# old_df <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Invert/CREP_Invert_Habitat_Data.csv", stringsAsFactors = F, na = ".") 
+### Set up fish and habitat data for comparison.
+fish <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.xlsx", sheet = 1)
+habitat <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Habitat_Characteristics.xlsx", sheet = 1)
 
-# names(new_df)
-# names(old_df)
+habitat$Site_ID <-paste(str_replace_all(habitat$Reach_Name, "[:blank:]", ""), str_replace_all(habitat$Event_Date,"-",""), sep = "_") 
 
-new_df <- new_df %>% select(-c(Habitat_IHI_ID, Habitat_IHI_PU_Gap_Code, Habitat_IHI_Reach_Name, Habitat_IHI_Event_Date,
-                               Habitat_QHEI_ID, Habitat_QHEI_PU_Gap_Code, Habitat_QHEI_Event_Date, Habitat_QHEI_Reach_Name, 
-                               Water_Chemistry_Field_ID, Water_Chemistry_Field_PU_Gap_Code, Water_Chemistry_Field_Reach_Name, Water_Chemistry_Field_Event_Date))
+habitat <- habitat %>%
+  select(-c(PU_Gap_Code, Reach_Name, Event_Date))
 
-# alt_df <- alt_df %>% select(-c(Site_Type))
-# old_df <- old_df %>% select(-c(DOY))
+habitat <- data.frame(habitat, row.names = 'Site_ID')
 
-names(new_df)[names(new_df) == 'Fish_Abundance_PU_Gap_Code'] <- 'PU_Gap_Code'
-names(new_df)[names(new_df) == 'Fish_Abundance_Reach_Name'] <- 'Reach_Name'
-names(new_df)[names(new_df) == 'Fish_Abundance_Event_Date'] <- 'Event_Date'
+fish$Site_ID <-paste(str_replace_all(fish$Reach_Name, "[:blank:]", ""), str_replace_all(fish$Event_Date,"-",""), sep = "_") 
 
-# old_df$Event_Date <- as.Date(old_df$Event_Date, format = "%m/%d/%Y")
-# setequal(new_df, old_df)
+fish_matrix <- fish %>%
+  select(-c(Fish_Abundance_ID, PU_Gap_Code, Reach_Name, Event_Date)) %>%
+  spread(Fish_Species_Code,Fish_Species_Count, fill = 0)
 
-setequal(new_df, alt_df)
-## Compare VTT List to that of IL Fish list and then manually fix errors. 
+fish_matrix <- data.frame(fish_matrix, row.names = 'Site_ID')
 
-# old_site <- paste(old_df$PU_Gap_Code, old_df$Reach_Name, old_df$Event_Date, sep = "_")
-new_site <- paste(new_df$PU_Gap_Code, new_df$Reach_Name, new_df$Event_Date, sep = "_")
-alt_site <- paste(alt_df$PU_Gap_Code, alt_df$Reach_Name, alt_df$Event_Date, sep = "_")
-compare <- data.frame(alt_site, new_site)
-# compare$Match <- str_detect(compare$new_site, compare$old_site)
-compare$Match <- ifelse(compare$alt_site == compare$new_site, "TRUE", "FALSE")
+## write.csv(habitat, "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Habitat.csv", na = ".")
+habitat_2 <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Habitat.csv", stringsAsFactors = F, header = T, row.names = 1, na = ".")
+
+habitat_2 <- habitat_2 %>% select(-c("Water_Temperature", "DO", "DO_Saturation", "Conductivity", "pH",
+                                     "Nitrate", "Ammonia", "Orthophosphate", "Turbidity", "Visual_Water_Clarity", "Chloride", "Chloride_QU"))
+habitat_3 <- na.omit(habitat_2)
+
+mydata <- merge(fish_matrix, habitat_3, by= "Row.names"  , all.x = TRUE)
+mydata <- data.frame(mydata, row.names = 'Site_ID')
+
+# data(iris)
+# 
+# iris.rf <- randomForest(Species ~ ., data=iris, importance=TRUE, proximity=TRUE)
+
+set.seed(13)
+fish_RF1 <- randomForest(mydata ~ ., data = mydata, na.action = na.omit, ntree= 5000, mtry=4, importance= T)
+
+
+##### Random Forest
+set.seed(13)
+fish_RF1 <- randomForest(fish_matrix$BAS ~ ., data = habitat_2, na.action = na.omit, ntree= 5000, mtry=4, importance= T)
+
+#PLOT YOUR FORESTS IMPORTANT VARIABLES
+varImpPlot(fish_RF1, type = 1)
+
+# 
+# partialPlot(RF1, envi, Wt_Area)
+# partialPlot(RF1, envi, WT_Urban)
+# partialPlot(RF1, envi, WT_JMin)
