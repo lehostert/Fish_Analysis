@@ -35,7 +35,7 @@ names(tolerance)[names(tolerance) == 'Scientific Name'] <- 'Fish_Species_Scienti
 
 
 ### Load Fish Data from 2014-2018 from CREP_Database
-kasky_fish_table <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Fish_Abundance_Data.xlsx", sheet = 1, col_names = T) %>%
+kasky_fish_table <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.xlsx", sheet = 1, col_names = T) %>%
   select(-c(Fish_Abundance_ID))
 kasky_fish_table$Site_ID <-paste(str_replace_all(kasky_fish_table$Reach_Name, "[:blank:]", ""), str_replace_all(kasky_fish_table$Event_Date,"-",""), sep = "_") 
 
@@ -49,7 +49,7 @@ kasky_fish_matrix <- kasky_fish_table %>%
 # kasky_fish_table_with_traits <- as.data.frame(kasky_fish_table_with_traits, row.names = Site_ID)
 
 # The above did not work so exporting and re-importing 
-write.csv(kasky_fish_matrix,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Fish_Abundance_Matrix.csv", na = ".", row.names = F)
+write.csv(kasky_fish_matrix,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Matrix.csv", na = ".", row.names = F)
 kasky_fish_matrix<- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Fish_Abundance_Matrix.csv", header = T, row.names = 1, na = "." )
 
 ### Add traits to kasky_fish_table
@@ -70,8 +70,21 @@ J_evenness  <- function(x) {
   }
 
 EVENNESS <- J_evenness(kasky_fish_matrix)
+RICHNESS <- specnumber(kasky_fish_matrix)
 # CATONTAX <- if spp./ taxa in il_fish_traits is Catostomid then find that Species_Code in kasky_fish_matrix 
 # CATONTAX <- ifelse(il_fish_traits$Family = Catostomidae,                   )
+kasky_species_list <- colnames(kasky_fish_matrix)
+
+for(spp in seq_along(kasky_species_list)) {
+  if(il_fish_traits$Family[il_fish_traits$Fish_Species_Code==spp]== 'Catostomidae'){
+    print("spp, TRUE")
+    }else print("yes!")
+}
+
+
+if(il_fish_traits$Family[il_fish_traits$Fish_Species_Code=='WHS']== 'Catostomidae') {print(TRUE)}
+
+il_fish_trais$Family
 
 kasky_site_metrics <- data.frame(SPECIES,DIVERSITY,EVENNESS)
 
