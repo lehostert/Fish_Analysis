@@ -3,16 +3,17 @@ library(vegan)
 library(stringi)
 
 ###Load IL Fish Codes and Native Status
-# il_fish_path <- "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Fish_Trait_Matrix_Base.csv"
-il_fish_path <- "C:/Users/lhostert/Desktop/Fish/Fish_Trait_Matrix_Base.csv"
+il_fish_path <- "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Fish_Trait_Matrix_Base.csv"
+# il_fish_path <- "C:/Users/lhostert/Desktop/Fish/Fish_Trait_Matrix_Base.csv"
 il_fish_spp <- read.csv(il_fish_path, header = T, stringsAsFactors = F, na ="")
 il_fish_spp$Fish_Species_Common <- str_to_lower(il_fish_spp$Fish_Species_Common)
 il_fish_spp <-  il_fish_spp %>% filter(is.na(Unidentified_Species)) %>% filter(is.na(Hybrid)) 
 names(il_fish_spp)[names(il_fish_spp) == 'Species_Code'] <- 'Fish_Species_Code'
 
 ### VT Traits
-# VTT_path <- "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/VT_FishTraits/FishTraits_14.3.csv"
-VTT_path <- "C:/Users/lhostert/Desktop/Fish/VT_FishTraits/FishTraits_14.3.csv"
+# Load VT Fish Traits accessed from USGS sciencebase through this link https://www.sciencebase.gov/catalog/item/5a7c6e8ce4b00f54eb2318c0 on 2/7/19
+VTT_path <- "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/VT_FishTraits/FishTraits_14.3.csv"
+# VTT_path <- "C:/Users/lhostert/Desktop/Fish/VT_FishTraits/FishTraits_14.3.csv"
 VTT_dataset <- read.csv(VTT_path, header = T, stringsAsFactors = F, na ="")
 names(VTT_dataset)[names(VTT_dataset) == 'COMMONNAME'] <- 'Fish_Species_Common'
 VTT_dataset$Fish_Species_Scientific <- paste(VTT_dataset$GENUS, VTT_dataset$SPECIES, sep = " " )
@@ -32,9 +33,11 @@ tol_USGS <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/
 tolerance <- full_join(tol_NRSA, tol_USGS, by= "Common Name") %>% select(-c(Max_Water_Temp))
 names(tolerance)[names(tolerance) == 'Common Name'] <- 'Fish_Species_Common'
 names(tolerance)[names(tolerance) == 'Scientific Name'] <- 'Fish_Species_Scientific'
+tolerance$Fish_Species_Common <- str_to_lower(tolerance$Fish_Species_Common)
 
+il_fish_traits <- left_join(il_fish_traits, tolerance, by =c('Fish_Species_Scientific','Fish_Species_Common'))
 
-### Load Fish Data from 2014-2018 from CREP_Database
+### Load Fish Data from 2014-2018 from CREP_Database 
 kasky_fish_table <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.xlsx", sheet = 1, col_names = T) %>%
   select(-c(Fish_Abundance_ID))
 kasky_fish_table$Site_ID <-paste(str_replace_all(kasky_fish_table$Reach_Name, "[:blank:]", ""), str_replace_all(kasky_fish_table$Event_Date,"-",""), sep = "_") 
@@ -44,49 +47,56 @@ kasky_fish_matrix <- kasky_fish_table %>%
   select(-c(PU_Gap_Code, Reach_Name, Event_Date)) %>%
   spread(Fish_Species_Code,Fish_Species_Count, fill = 0)
  
-# .rowNamesDF(kasky_fish_matrix, make.names=FALSE) <- kasky_fish_matrix$Site_ID
-# row.names(kasky_fish_matrix) <- kasky_fish_matrix$Site_ID
-# kasky_fish_table_with_traits <- as.data.frame(kasky_fish_table_with_traits, row.names = Site_ID)
+row.names(kasky_fish_matrix) <- kasky_fish_matrix$Site_ID
+kasky_fish_matrix <- kasky_fish_matrix %>% select(-c(Site_ID))
+kasky_species_list <- colnames(kasky_fish_matrix)
 
-# The above did not work so exporting and re-importing 
-write.csv(kasky_fish_matrix,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Matrix.csv", na = ".", row.names = F)
-kasky_fish_matrix<- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Fish_Abundance_Matrix.csv", header = T, row.names = 1, na = "." )
+# #If The above did not work so exporting and re-importing 
+# write.csv(kasky_fish_matrix,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Matrix.csv", na = ".", row.names = F)
+# kasky_fish_matrix<- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Fish_Abundance_Matrix.csv", header = T, row.names = 1, na = "." )
 
-### Add traits to kasky_fish_table
-
-kasky_fish_table_with_traits <- kasky_fish_table %>%
-  select(-c(PU_Gap_Code, Reach_Name, Event_Date)) %>%
-  left_join(il_fish_traits, by = "Fish_Species_Code")
-
-###################### Attempted to makde a new table with all the fish traits attached to the fish Abundance data. 
+### Add traits to kasky_fish_tablet
+## Attempt to make a new table with all the fish traits attached to the fish Abundance data. 
 ## This should help functions like CATONTAX calculate
-## 
+
+# kasky_fish_table_with_traits <- kasky_fish_table %>%
+#   select(-c(PU_Gap_Code, Reach_Name, Event_Date)) %>%
+#   left_join(il_fish_traits, by = "Fish_Species_Code")
 
 
-SPECIES <- rowSums(kasky_fish_matrix != 0)
+INDIVIDUALS <- rowSums(kasky_fish_matrix)
+RICHNESS <- rowSums(kasky_fish_matrix != 0) 
+# #RICHNESS <- specnumber(kasky_fish_matrix) produces same as above but requires vegan to work
 DIVERSITY <- vegan::diversity(kasky_fish_matrix, index = "shannon")
 J_evenness  <- function(x) {
   diversity(x)/log(specnumber(x))
   }
 
 EVENNESS <- J_evenness(kasky_fish_matrix)
-RICHNESS <- specnumber(kasky_fish_matrix)
+
 # CATONTAX <- if spp./ taxa in il_fish_traits is Catostomid then find that Species_Code in kasky_fish_matrix 
 # CATONTAX <- ifelse(il_fish_traits$Family = Catostomidae,                   )
-kasky_species_list <- colnames(kasky_fish_matrix)
 
+##Take 1
+CATONTAX <- 0
+for(spp in colnames(kasky_fish_matrix)) {
+  if(il_fish_traits$Family[il_fish_traits$Fish_Species_Code==spp]== 'Catostomidae'){
+    CATONTAX[spp] <- paste("TRUE")
+  } else CATONTAX[spp] <- paste("Bad News :(")
+}
+
+## Take 2
 for(spp in seq_along(kasky_species_list)) {
   if(il_fish_traits$Family[il_fish_traits$Fish_Species_Code==spp]== 'Catostomidae'){
     print("spp, TRUE")
-    }else print("yes!")
+  }else print("yes!")
 }
 
 
+##This works
 if(il_fish_traits$Family[il_fish_traits$Fish_Species_Code=='WHS']== 'Catostomidae') {print(TRUE)}
 
-il_fish_trais$Family
-
-kasky_site_metrics <- data.frame(SPECIES,DIVERSITY,EVENNESS)
+kasky_site_metrics <- data.frame(INDIVIDUALS,RICHNESS,DIVERSITY,EVENNESS)
 
 
 # kasky_fish_matrix %>% select(-c(kasky_fish_matrix$Site_ID))
