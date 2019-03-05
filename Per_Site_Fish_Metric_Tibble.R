@@ -24,8 +24,9 @@ num_taxa_by_trait <- function(counts_and_traits, desired_trait, value) {
   #' 
   #' @param value The value of the desired trait
   
-  # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function> for more details
-  # Create quosure to use 
+  # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
+  # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
+  # See Hadley's vingette <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html> for more details on why enquo is necessary.
   desired_trait <- dplyr::enquo(desired_trait) 
   
   # Filter out the family of interest
@@ -70,8 +71,9 @@ num_ind_by_trait <- function(counts_and_traits, desired_trait, value) {
   #' 
   #' @param value The value of the desired trait
   
-  # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function> for more details
-  # Create quosure to use 
+  # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
+  # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
+  # See Hadley's vingette <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html> for more details on why enquo is necessary.
   desired_trait <- dplyr::enquo(desired_trait)
   
   # Summarise by number of indiviudals and filter out the family of interest
@@ -125,21 +127,27 @@ fish_table$HERBIVORE <- ifelse(fish_table$ALGPHYTO == '1',
                                )
 )
 
-il_fish_traits$HERBIVORE <- ifelse(il_fish_traits$ALGPHYTO == '1',
-                                   1,
-                                   ifelse(il_fish_traits$MACVASCU == '1',
-                                          1,
-                                          ifelse(il_fish_traits$DETRITUS == '1',
-                                                 1,
-                                                 0
-                                          )
-                                   )
-)
-
 fish_table$OMNIVORE <- ifelse((fish_table$HERBIVORE + fish_table$INVLVFSH + fish_table$FSHCRCRB + fish_table$BLOOD + fish_table$EGGS + fish_table$OTHER) >1,
                               1,
                               0
 )
+
+fish_table$LITHOPHILIC <- ifelse (fish_table$GRAVEL == '1',
+                                  1,
+                                  ifelse(fish_table$COBBLE == '1',
+                                         1,
+                                         ifelse(fish_table$BOULDER == '1',
+                                                1,
+                                                0
+                                                )
+                                         )
+)
+
+fish_table$BENTHIC_INSECTIVORE <- ifelse((fish_table$BENTHIC + fish_table$INVLVFSH) == 2,
+                                         1,
+                                         0
+                                         )
+
 
 # Get Site Metric fields
 INDIVIDUALS <- rowSums(fish_data)
@@ -292,15 +300,9 @@ site_metric_tibble$FSPTAX <- round(site_metric_tibble$FSNTAX/site_metric_tibble$
 site_metric_tibble$FSNIND <- num_ind_by_trait(fish_table, PREFLOT, '1')
 site_metric_tibble$FSPIND <- round(site_metric_tibble$FSNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$LITHNTAX <- (num_taxa_by_trait(fish_table, GRAVEL, '1') + 
-                                    num_taxa_by_trait(fish_table, COBBLE, '1') + 
-                                    num_taxa_by_trait(fish_table, BOULDER, '1')
-                                )
+site_metric_tibble$LITHNTAX <- num_taxa_by_trait(fish_table, LITHOPHILIC, '1')
 site_metric_tibble$LITHPTAX <- round(site_metric_tibble$LITHNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$LITHNIND <- (num_ind_by_trait(fish_table, GRAVEL, '1') + 
-                                    num_ind_by_trait(fish_table, COBBLE, '1') + 
-                                    num_ind_by_trait(fish_table, BOULDER, '1')
-                                )
+site_metric_tibble$LITHNIND <- num_ind_by_trait(fish_table, LITHOPHILIC, '1')
 site_metric_tibble$LITHPIND <- round(site_metric_tibble$LITHNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$CARNNTAX <- num_taxa_by_trait(fish_table, FSHCRCRB, '1')
@@ -317,3 +319,42 @@ site_metric_tibble$HERBNTAX <- num_taxa_by_trait(fish_table, HERBIVORE, '1')
 site_metric_tibble$HERBPTAX <- round(site_metric_tibble$HERBNTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$HERBNIND <- num_ind_by_trait(fish_table, HERBIVORE, '1')
 site_metric_tibble$HERBPIND <- round(site_metric_tibble$HERBNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$OMNINTAX <- num_taxa_by_trait(fish_table, OMNIVORE, '1')
+site_metric_tibble$OMNIPTAX <- round(site_metric_tibble$OMNINTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$OMNININD <- num_ind_by_trait(fish_table, OMNIVORE, '1')
+site_metric_tibble$OMNIPIND <- round(site_metric_tibble$OMNININD/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$ALGNTAX <- num_taxa_by_trait(fish_table, ALGPHYTO, '1')
+site_metric_tibble$ALGPTAX <- round(site_metric_tibble$ALGNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$ALGNIND <- num_ind_by_trait(fish_table, ALGPHYTO, '1')
+site_metric_tibble$ALGPIND <- round(site_metric_tibble$ALGNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$PLANTNTAX <- num_taxa_by_trait(fish_table, MACVASCU, '1')
+site_metric_tibble$PLANTPTAX <- round(site_metric_tibble$PLANTNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$PLANTNIND <- num_ind_by_trait(fish_table, MACVASCU, '1')
+site_metric_tibble$PLANTPIND <- round(site_metric_tibble$PLANTNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$DETNTAX <- num_taxa_by_trait(fish_table, DETRITUS, '1')
+site_metric_tibble$DETPTAX <- round(site_metric_tibble$DETNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$DETNIND <- num_ind_by_trait(fish_table, DETRITUS, '1')
+site_metric_tibble$DETPIND <- round(site_metric_tibble$DETNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$BENTINVNTAX <- num_taxa_by_trait(fish_table, BENTHIC_INSECTIVORE, '1')
+site_metric_tibble$BENTINVPTAX <- round(site_metric_tibble$BENTINVNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$BENTINVNIND <- num_ind_by_trait(fish_table, BENTHIC_INSECTIVORE, '1')
+site_metric_tibble$BENTINVPIND <- round(site_metric_tibble$BENTINVNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$COSUBNTAX <- (num_taxa_by_trait(fish_table, A_1_3A, '1') + 
+                                    num_taxa_by_trait(fish_table, A_1_3B, '1') + 
+                                    num_taxa_by_trait(fish_table, A_2_3A, '1') +
+                                    num_taxa_by_trait(fish_table, A_2_3B, '1') 
+)
+site_metric_tibble$COSUBPTAX <- round(site_metric_tibble$COSUBNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$COSUBNIND <- (num_ind_by_trait(fish_table, A_1_3A, '1') + 
+                                    num_ind_by_trait(fish_table, A_1_3B, '1') + 
+                                    num_ind_by_trait(fish_table, A_2_3A, '1') +
+                                    num_ind_by_trait(fish_table, A_2_3B, '1')
+)
+site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
