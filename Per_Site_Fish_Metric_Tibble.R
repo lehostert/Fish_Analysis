@@ -291,11 +291,23 @@ site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Level, 'i
 site_metric_tibble$INTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 ##
-site_metric_tibble$DOTOLTAX <-
-site_metric_tibble$DOTOLIND <-
+site_metric_tibble$DOTOLTAX <- ave_tolerance_by_trait(fish_table, Dissolved_Oxygen)
+site_metric_tibble$DOTOLIND <- weighted_ave_tolerance_by_trait(fish_table, Dissolved_Oxygen)
 
-site_metric_tibble$NO2TOLTAX <-
-site_metric_tibble$NO2TOLIND <-
+site_metric_tibble$NO2TOLTAX <- ave_tolerance_by_trait(fish_table, Nitrite_Nitrate)
+site_metric_tibble$NO2TOLIND <- weighted_ave_tolerance_by_trait(fish_table, Nitrite_Nitrate)
+
+site_metric_tibble$TPHOSTOLTAX <- ave_tolerance_by_trait(fish_table, Total_Phosphorus)
+site_metric_tibble$TPHOSTOLIND <- weighted_ave_tolerance_by_trait(fish_table, Total_Phosphorus)
+
+site_metric_tibble$SUSSEDTOLTAX <- ave_tolerance_by_trait(fish_table, Suspended_Sediment_Conc)
+site_metric_tibble$SUSSEDTOLIND <- weighted_ave_tolerance_by_trait(fish_table, Suspended_Sediment_Conc)
+
+site_metric_tibble$TEMPMAXTOLTAX <- ave_tolerance_by_trait(fish_table, MAXTEMP)
+site_metric_tibble$TEMPMAXTOLIND <- weighted_ave_tolerance_by_trait(fish_table, MAXTEMP)
+
+site_metric_tibble$TEMPMINTOLTAX <- ave_tolerance_by_trait(fish_table, MINTEMP)
+site_metric_tibble$TEMPMINTOLIND <- weighted_ave_tolerance_by_trait(fish_table, MINTEMP)
   
 ## Missing DTOLTAX through MATUAGE. Different functions must be created for these types of metrics
 
