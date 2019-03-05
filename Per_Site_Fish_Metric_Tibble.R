@@ -104,6 +104,99 @@ num_ind_by_trait <- function(counts_and_traits, desired_trait, value) {
   return(site_id_ind_by_trait)
 }
 
+average_by_trait <- function(counts_and_traits, trait) {
+  
+  #' Get number of unique taxa per specified trait per site (*NTAX)
+  #' 
+  #' Create a named vector of the counts of the trait in question for
+  #' the site ids in the input tibble
+  #' 
+  #' Used to create fields for the final Site Metric tibble. The return value
+  #' is a named vector to match the data structure of the other Site Metric fields.
+  #' 
+  #' @param counts_and_traits A tibble of count data and animal traits
+  #' 
+  #' @param desired_trait The animal trait in question to filter.
+  #' 
+  #' @param value The value of the desired trait
+  
+  # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
+  # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
+  # See Hadley's vingette <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html> for more details on why enquo is necessary.
+  trait <- dplyr::enquo(trait) 
+  
+  # Group by Site_ID, then commute the mean DO for each site
+  # Then mutate the DO mean to get a named vector of site IDs with the mean.
+  site_id_average <- counts_and_traits %>% 
+    dplyr::group_by(Site_ID) %>% 
+    dplyr::summarise(mean = mean(!!trait)) %>%
+    dplyr::select(x = mean, nm = Site_ID) %>%
+    purrr::pmap(set_names) %>% 
+    unlist
+  
+  return(site_id_average)
+}
+
+weighted_average_by_trait <- function(counts_and_traits, trait) {
+  
+  #' Get number of unique taxa per specified trait per site (*NTAX)
+  #' 
+  #' Create a named vector of the counts of the trait in question for
+  #' the site ids in the input tibble
+  #' 
+  #' Used to create fields for the final Site Metric tibble. The return value
+  #' is a named vector to match the data structure of the other Site Metric fields.
+  #' 
+  #' @param counts_and_traits A tibble of count data and animal traits
+  #' 
+  #' @param desired_trait The animal trait in question to filter.
+  #' 
+  #' @param value The value of the desired trait
+  
+  # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
+  # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
+  # See Hadley's vingette <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html> for more details on why enquo is necessary.
+  trait <- dplyr::enquo(trait) 
+  
+  # Group by Site_ID, then commute the mean DO for each site
+  # Then mutate the DO mean to get a named vector of site IDs with the mean.
+  site_id_w_average <- counts_and_traits %>% 
+    dplyr::group_by(Site_ID) %>% 
+    dplyr::summarise(wmean = weighted.mean(!!trait, Fish_Species_Count)) %>%
+    dplyr::select(x = wmean, nm = Site_ID) %>%
+    purrr::pmap(set_names) %>% 
+    unlist
+  
+  return(site_id_w_average)
+}
+
+fecundity_by_total_length <- function(counts_and_traits) {
+  
+  #' Get average species fecundity adjusted for total length
+  #' 
+  #' Create a named vector of the average fecundity corrected by total length
+  #' for the site ids in the input tibble
+  #' 
+  #' Used to create fields for the final Site Metric Tibble. The return value
+  #' is a named vector to match the data structure of the other site metric fields.
+  #' 
+  #' @param counts_and_traits A tibble of count data and animal traits
+  
+  # Calculate the fecundity adjusted by total length
+  # Group by Site_ID, then compute the mean adjusted fecundity for each site
+  # Then select just the mean and site info to produce a named vector of site IDs with the mean.
+  site_id_fecund <- counts_and_traits %>% 
+    dplyr::group_by(Site_ID) %>%
+    dplyr::mutate(fecund_tl = FECUNDITY/MAXTL)%>%
+    dplyr::summarise(mean = mean(fecund_tl)) %>%
+    dplyr::select(x = mean, nm = Site_ID) %>%
+    purrr::pmap(set_names) %>%
+    unlist
+  
+  
+  return(site_id_fecund)
+}
+
 J_evenness  <- function(x) {
   #' Creates additional metric called 'Eveness' based on diversity and species number from vegan package
   return(vegan::diversity(x)/log(specnumber(x)))
@@ -224,7 +317,32 @@ site_metric_tibble$INTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_t
 site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Level, 'intermediate')
 site_metric_tibble$INTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-## Missing DTOLTAX through MATUAGE. Different functions must be created for these types of metrics
+##
+site_metric_tibble$DOTOLTAX <- average_by_trait(fish_table, Dissolved_Oxygen)
+site_metric_tibble$DOTOLIND <- weighted_average_by_trait(fish_table, Dissolved_Oxygen)
+
+site_metric_tibble$NO2TOLTAX <- average_by_trait(fish_table, Nitrite_Nitrate)
+site_metric_tibble$NO2TOLIND <- weighted_average_by_trait(fish_table, Nitrite_Nitrate)
+
+site_metric_tibble$TPHOSTOLTAX <- average_by_trait(fish_table, Total_Phosphorus)
+site_metric_tibble$TPHOSTOLIND <- weighted_average_by_trait(fish_table, Total_Phosphorus)
+
+site_metric_tibble$SUSSEDTOLTAX <- average_by_trait(fish_table, Suspended_Sediment_Conc)
+site_metric_tibble$SUSSEDTOLIND <- weighted_average_by_trait(fish_table, Suspended_Sediment_Conc)
+
+site_metric_tibble$TEMPMAXTOLTAX <- average_by_trait(fish_table, MAXTEMP)
+site_metric_tibble$TEMPMAXTOLIND <- weighted_average_by_trait(fish_table, MAXTEMP)
+
+site_metric_tibble$TEMPMINTOLTAX <- average_by_trait(fish_table, MINTEMP)
+site_metric_tibble$TEMPMINTOLIND <- weighted_average_by_trait(fish_table, MINTEMP)
+
+# site_metric_tibble$BEGINSPAWN_MM <-
+## Different function must be created for this type of metric  
+
+site_metric_tibble$SPAWNDUR <- average_by_trait(fish_table, SEASON)
+site_metric_tibble$FECUNDITY_TL <- fecundity_by_total_length(fish_table)
+site_metric_tibble$LONGEVITY <- average_by_trait(fish_table, LONGEVITY)
+site_metric_tibble$MATUAGE <- average_by_trait(fish_table, MATUAGE)
 
 site_metric_tibble$PCNGOSNTAX <- (num_taxa_by_trait(fish_table, A_1_1, '1') + 
                                     num_taxa_by_trait(fish_table, A_1_2, '1') + 
