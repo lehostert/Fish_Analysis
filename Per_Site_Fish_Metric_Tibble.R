@@ -274,10 +274,11 @@ fish_table$BENTHIC_INSECTIVORE <- ifelse((fish_table$BENTHIC + fish_table$INVLVF
                                          0
                                          )
 
-# Create Tibble for Storing all Site Metrics. 
+# Create Tibble with basic diversity indices from 'vegan'.
+# This tibble will be the base for storing all additional computed site metrics. 
 site_metric_tibble <- create_site_metric_tibble(fish_table)
 
-# Compute and Add Additional Desired Metrics to the base table called site_metric_tibble
+# Compute and add additional site metrics to site_metric_tibble
 site_metric_tibble$CATONTAX <- num_taxa_by_trait(fish_table, Family, 'Catostomidae')
 site_metric_tibble$CATOPTAX <- round(site_metric_tibble$CATONTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$CATONIND <- num_ind_by_trait(fish_table, Family, 'Catostomidae')
