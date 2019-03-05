@@ -8,6 +8,44 @@ library(tidyverse)
 library(vegan)
 library(docstring)
 
+#Create needed functions
+
+create_site_metric_tibble <- function(counts_and_traits) {
+  
+  #' Create base for the site metric tibble using functions from package 'vegan'
+  #' 
+  #' Creates a dataframe with calculated features number of individuals, species richness, shannon diversity index,
+  #' and eveness for each site ids in the input tibble
+  #' 
+  #' @param counts_and_traits A tibble of count data and animal traits
+  #' 
+  
+  # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
+  # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
+  # See Hadley's vingette <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html> for more details on why enquo is necessary.
+  # trait <- dplyr::enquo(trait) 
+  
+  sparse_fish_data <- counts_and_traits %>%
+    select(c(Fish_Species_Code,Fish_Species_Count,Site_ID)) %>%
+    spread(Fish_Species_Code,Fish_Species_Count, fill = 0)
+  # vegan::diversity requires row names for evaluation. 
+  #This will make Site_ID the row name then remove the collmun Site_ID after row names are assigned
+  row.names(sparse_fish_data) <- sparse_fish_data$Site_ID
+  sparse_fish_data <- sparse_fish_data %>% select(-c(Site_ID))
+  
+  # Begin metric computation from sparse dataset
+  INDIVIDUALS <- rowSums(sparse_fish_data)
+  RICHNESS <- rowSums(sparse_fish_data != 0) 
+  DIVERSITY <- vegan::diversity(sparse_fish_data, index = "shannon")
+  EVENNESS <- vegan::diversity(sparse_fish_data)/log(specnumber(sparse_fish_data))
+  
+  # Create dataframe from computed metrics and convert row names back to a collumn in the dataframe.
+  # Consider making this a tibble directly instead of a dataframe. 
+  data.frame(INDIVIDUALS,RICHNESS,DIVERSITY,EVENNESS) %>%
+    tibble::rownames_to_column(var = "Site_ID")
+  
+}
+
 num_taxa_by_trait <- function(counts_and_traits, desired_trait, value) {
   
   #' Get number of unique taxa per specified trait per site (*NTAX)
@@ -197,14 +235,9 @@ fecundity_by_total_length <- function(counts_and_traits) {
   return(site_id_fecund)
 }
 
-J_evenness  <- function(x) {
-  #' Creates additional metric called 'Eveness' based on diversity and species number from vegan package
-  return(vegan::diversity(x)/log(specnumber(x)))
-}
-
 #  Load data
-il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Traits.csv", na ="")
-fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data.csv", row.names = 1, na = "")
+# il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Traits.csv", na ="")
+# fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data.csv", row.names = 1, na = "")
 fish_table <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data_With_Traits.csv", na = "")
 
 # Additional categories need to be calculated in trait data (This affects both il_fish_traits and fish_table)
@@ -241,22 +274,10 @@ fish_table$BENTHIC_INSECTIVORE <- ifelse((fish_table$BENTHIC + fish_table$INVLVF
                                          0
                                          )
 
+# Create Tibble for Storing all Site Metrics. 
+site_metric_tibble <- create_site_metric_tibble(fish_table)
 
-# Get Site Metric fields
-INDIVIDUALS <- rowSums(fish_data)
-RICHNESS <- rowSums(fish_data != 0) 
-DIVERSITY <- vegan::diversity(fish_data, index = "shannon")
-EVENNESS <- J_evenness(fish_data)
-
-site_metric_tibble <- data.frame(INDIVIDUALS,RICHNESS,DIVERSITY,EVENNESS) %>%
-  tibble::rownames_to_column(var = "Site_ID")
-
-# Before we use the function at the top let's first learn about it by having RStudio display its docstring
-# Remove this later
-?num_taxa_by_trait
-?num_ind_by_trait
-
-# Add Desired Metrics to the base table called site_metric_tibble
+# Compute and Add Additional Desired Metrics to the base table called site_metric_tibble
 site_metric_tibble$CATONTAX <- num_taxa_by_trait(fish_table, Family, 'Catostomidae')
 site_metric_tibble$CATOPTAX <- round(site_metric_tibble$CATONTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$CATONIND <- num_ind_by_trait(fish_table, Family, 'Catostomidae')
@@ -337,7 +358,7 @@ site_metric_tibble$TEMPMINTOLTAX <- average_by_trait(fish_table, MINTEMP)
 site_metric_tibble$TEMPMINTOLIND <- weighted_average_by_trait(fish_table, MINTEMP)
 
 # site_metric_tibble$BEGINSPAWN_MM <-
-## Different function must be created for this type of metric  
+## Different function must be created for this type of metric. Average Month does not make sense so need for re-evaluating metric.
 
 site_metric_tibble$SPAWNDUR <- average_by_trait(fish_table, SEASON)
 site_metric_tibble$FECUNDITY_TL <- fecundity_by_total_length(fish_table)
