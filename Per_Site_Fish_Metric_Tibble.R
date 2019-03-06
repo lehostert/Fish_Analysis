@@ -1,14 +1,48 @@
 ## The purpose fo this script to to take tidy data set and compute various fish metrics on a per site basis
 ## and ultimately produce a tibble of all of the per site fish metrics.
 ## First functions for the various metrics are created 
-## Second Fish data is loaded in two forms. 1- Sparse "Diversity" style dataframe 2- tidy dataframe from a Database
-## Finally, metrics are computed and added to the "site_metric_tibble"
+## Second Fish data is loaded in a tidy dataframe (such as from a Database) 
+## Fish data should be in a style where site, date, rep info has been combined to a unique name in a single column called Site_ID
+## Third the "site_metric_tibble" base is created with basic indicies from 'vegan' package. 
+## Finally, additional metrics are computed and added to the "site_metric_tibble"
 
 library(tidyverse)
 library(vegan)
 library(docstring)
 
-#Create needed functions
+#Create Functions
+
+add_traits_to_data <- function(fish_data) {
+  
+  #' Create dataframe in which species specific traits are joined with data collection data. 
+  #'
+  #' 
+  #' @param fish_data A dataframe with at least 3 collumns unique idenifying name for sample (Site_ID), 
+  #' 3-letter short name for fish species (Fish_Species_Code), count of the number of that specific species sampled (Fish_Species_Count)
+  #' 
+  #' This adds species specific trait informaiton compiled from the following sources:
+  #' VT Fish Traits
+  #' Emmanuel Frimpong, and Paul L. Angermeier, 200811, Fish Traits Database: USGS,  https://doi.org/10.5066/F7WD3ZH8.
+  #' Accessed from USGS sciencebase through https://www.sciencebase.gov/catalog/item/5a7c6e8ce4b00f54eb2318c0 on 2019-02-11
+  #' 
+  #' USGS Tolerance Data
+  #' M.R. Meador and D.M. Carlisle.  2007.  Quantifying tolerance indicator values for common fish species of the United States. Ecological Indicators, 7:329-338.
+  #' Available from USGS Ecological National Synthesis (ENS) Project "Fish Traits & Tolerance Data"  https://water.usgs.gov/nawqa/ecology/data.html 
+  #' Specifically <https://water.usgs.gov/nawqa/ecology/pubs/FishToleranceIndicatorValuesTables.xls> (accessed 2019-02-21)
+  #' 
+  #' Calculated binary Values from VT Traits
+  #' HERBIVORE = "1" if ALGPHYTO or MACVASCU or DETRITUS = 1 ,  "0" if none of them = 1
+  #' OMNIVORE = "1" if more than one of HERBIVORE INVLVFSH FSHCRCRB BLOOD EGGS OTHER = 1,"0" if only one =1
+  #' LITHOPHILIC = "1" if GRAVEL or COBBLE or BOULDER = 1, "0" if none of them = 1
+  #' BENTHIC_INSECTIVORE = "1" if BENTHIC and INVLVFSH = 1 , "0" if one or both = 0
+  
+  
+  il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", stringsAsFactors = F)
+  
+  fish_table <- fish_data %>% 
+    select(c(Site_ID, Fish_Species_Code, Fish_Species_Count))%>%
+    left_join(il_fish_traits, by = 'Fish_Species_Code')
+}
 
 create_site_metric_tibble <- function(counts_and_traits) {
   
@@ -235,44 +269,13 @@ fecundity_by_total_length <- function(counts_and_traits) {
   return(site_id_fecund)
 }
 
-#  Load data
-# il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Traits.csv", na ="")
-# fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data.csv", row.names = 1, na = "")
-fish_table <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data_With_Traits.csv", na = "")
+#  Load Data
+example_fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data.csv", na = "", stringsAsFactors = F)
+# fish_table <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data_With_Traits.csv", na = "")
 
-# Additional categories need to be calculated in trait data (This affects both il_fish_traits and fish_table)
-# Can be removed for final calculations provided il_fish_traits has been updated
-fish_table$HERBIVORE <- ifelse(fish_table$ALGPHYTO == '1',
-                               1,
-                               ifelse(fish_table$MACVASCU == '1',
-                                      1,
-                                      ifelse(fish_table$DETRITUS == '1',
-                                             1,
-                                             0
-                                      )
-                               )
-)
 
-fish_table$OMNIVORE <- ifelse((fish_table$HERBIVORE + fish_table$INVLVFSH + fish_table$FSHCRCRB + fish_table$BLOOD + fish_table$EGGS + fish_table$OTHER) >1,
-                              1,
-                              0
-)
-
-fish_table$LITHOPHILIC <- ifelse (fish_table$GRAVEL == '1',
-                                  1,
-                                  ifelse(fish_table$COBBLE == '1',
-                                         1,
-                                         ifelse(fish_table$BOULDER == '1',
-                                                1,
-                                                0
-                                                )
-                                         )
-)
-
-fish_table$BENTHIC_INSECTIVORE <- ifelse((fish_table$BENTHIC + fish_table$INVLVFSH) == 2,
-                                         1,
-                                         0
-                                         )
+#Add traits to fish count data
+fish_table <- add_traits_to_data(example_fish_data, il_fish_traits)
 
 # Create Tibble with basic diversity indices from 'vegan'.
 # This tibble will be the base for storing all additional computed site metrics. 
@@ -319,38 +322,38 @@ site_metric_tibble$ALIENPTAX <- round(site_metric_tibble$ALIENNTAX/site_metric_t
 site_metric_tibble$ALIENNIND <- num_ind_by_trait(fish_table, Nonnative, '1')
 site_metric_tibble$ALIENPIND <- round(site_metric_tibble$ALIENNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Level, 'tolerant')
+site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'tolerant')
 site_metric_tibble$TOLRPTAX <- round(site_metric_tibble$TOLRNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Level, 'tolerant')
+site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'tolerant')
 site_metric_tibble$TOLRPIND <- round(site_metric_tibble$TOLRNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Level, 'tolerant')
+site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'tolerant')
 site_metric_tibble$TOLRPTAX <- round(site_metric_tibble$TOLRNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Level, 'tolerant')
+site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'tolerant')
 site_metric_tibble$TOLRPIND <- round(site_metric_tibble$TOLRNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$SENSNTAX <- num_taxa_by_trait(fish_table, Tolerance_Level, 'sensitive')
+site_metric_tibble$SENSNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'sensitive')
 site_metric_tibble$SENSPTAX <- round(site_metric_tibble$SENSNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$SENSNIND <- num_ind_by_trait(fish_table, Tolerance_Level, 'sensitive')
+site_metric_tibble$SENSNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'sensitive')
 site_metric_tibble$SENSPIND <- round(site_metric_tibble$SENSNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$INTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Level, 'intermediate')
+site_metric_tibble$INTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'intermediate')
 site_metric_tibble$INTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Level, 'intermediate')
+site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'intermediate')
 site_metric_tibble$INTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 ##
 site_metric_tibble$DOTOLTAX <- average_by_trait(fish_table, Dissolved_Oxygen)
 site_metric_tibble$DOTOLIND <- weighted_average_by_trait(fish_table, Dissolved_Oxygen)
 
-site_metric_tibble$NO2TOLTAX <- average_by_trait(fish_table, Nitrite_Nitrate)
-site_metric_tibble$NO2TOLIND <- weighted_average_by_trait(fish_table, Nitrite_Nitrate)
+site_metric_tibble$NO2TOLTAX <- average_by_trait(fish_table, Nitrate_Nitrite)
+site_metric_tibble$NO2TOLIND <- weighted_average_by_trait(fish_table, Nitrate_Nitrite)
 
 site_metric_tibble$TPHOSTOLTAX <- average_by_trait(fish_table, Total_Phosphorus)
 site_metric_tibble$TPHOSTOLIND <- weighted_average_by_trait(fish_table, Total_Phosphorus)
 
-site_metric_tibble$SUSSEDTOLTAX <- average_by_trait(fish_table, Suspended_Sediment_Conc)
-site_metric_tibble$SUSSEDTOLIND <- weighted_average_by_trait(fish_table, Suspended_Sediment_Conc)
+site_metric_tibble$SUSSEDTOLTAX <- average_by_trait(fish_table, Suspended_Sediment)
+site_metric_tibble$SUSSEDTOLIND <- weighted_average_by_trait(fish_table, Suspended_Sediment)
 
 site_metric_tibble$TEMPMAXTOLTAX <- average_by_trait(fish_table, MAXTEMP)
 site_metric_tibble$TEMPMAXTOLIND <- weighted_average_by_trait(fish_table, MAXTEMP)
