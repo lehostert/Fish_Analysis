@@ -275,7 +275,7 @@ example_fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/A
 
 
 #Add traits to fish count data
-fish_table <- add_traits_to_data(example_fish_data, il_fish_traits)
+fish_table <- add_traits_to_data(example_fish_data)
 
 # Create Tibble with basic diversity indices from 'vegan'.
 # This tibble will be the base for storing all additional computed site metrics. 
