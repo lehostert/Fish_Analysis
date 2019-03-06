@@ -1,4 +1,4 @@
-## The purpose fo this script to to take tidy data set and compute various fish metrics on a per site basis
+## The purpose fo this script to to take tidy data set of fish species counts and compute various fish metrics on a per site basis
 ## and ultimately produce a tibble of all of the per site fish metrics.
 ## First functions for the various metrics are created 
 ## Second Fish data is loaded in a tidy dataframe (such as from a Database) 
@@ -12,12 +12,12 @@ library(docstring)
 
 #Create Functions
 
-add_traits_to_data <- function(fish_data) {
+add_traits_to_data <- function(species_count_data) {
   
   #' Create dataframe in which species specific traits are joined with data collection data. 
   #'
   #' 
-  #' @param fish_data A dataframe with at least 3 collumns unique idenifying name for sample (Site_ID), 
+  #' @param species_count_data A dataframe with at least 3 collumns unique idenifying name for sample (Site_ID), 
   #' 3-letter short name for fish species (Fish_Species_Code), count of the number of that specific species sampled (Fish_Species_Count)
   #' 
   #' This adds species specific trait informaiton compiled from the following sources:
@@ -39,7 +39,7 @@ add_traits_to_data <- function(fish_data) {
   
   il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", stringsAsFactors = F)
   
-  fish_table <- fish_data %>% 
+  fish_table <- species_count_data %>% 
     select(c(Site_ID, Fish_Species_Code, Fish_Species_Count))%>%
     left_join(il_fish_traits, by = 'Fish_Species_Code')
 }
@@ -269,13 +269,15 @@ fecundity_by_total_length <- function(counts_and_traits) {
   return(site_id_fecund)
 }
 
-#  Load Data
-example_fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data.csv", na = "", stringsAsFactors = F)
-# fish_table <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Example/Example_Fish_Data_With_Traits.csv", na = "")
+# Load fish count data
+fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
 
+# Create unique Site_ID per sample
+fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
+fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
 #Add traits to fish count data
-fish_table <- add_traits_to_data(example_fish_data)
+fish_table <- add_traits_to_data(fish_data)
 
 # Create Tibble with basic diversity indices from 'vegan'.
 # This tibble will be the base for storing all additional computed site metrics. 
