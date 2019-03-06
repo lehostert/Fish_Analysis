@@ -11,8 +11,10 @@ il_fish_spp$Fish_Species_Common <- str_to_lower(il_fish_spp$Fish_Species_Common)
 il_fish_spp <-  il_fish_spp %>% filter(is.na(Unidentified_Species)) %>% filter(is.na(Hybrid)) 
 names(il_fish_spp)[names(il_fish_spp) == 'Species_Code'] <- 'Fish_Species_Code'
 
-### VT Traits
-# Load VT Fish Traits accessed from USGS sciencebase through this link https://www.sciencebase.gov/catalog/item/5a7c6e8ce4b00f54eb2318c0 on 2/7/19
+### Load VT Traits
+# VT Fish Traits
+# Emmanuel Frimpong, and Paul L. Angermeier, 200811, Fish Traits Database: USGS,  https://doi.org/10.5066/F7WD3ZH8.
+# Accessed from USGS sciencebase through https://www.sciencebase.gov/catalog/item/5a7c6e8ce4b00f54eb2318c0 on 2/7/19
 VTT_path <- "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/VT_FishTraits/FishTraits_14.3.csv"
 # VTT_path <- "C:/Users/lhostert/Desktop/Fish/VT_FishTraits/FishTraits_14.3.csv"
 VTT_dataset <- read.csv(VTT_path, header = T, stringsAsFactors = F, na ="")
@@ -27,12 +29,13 @@ VTT_dataset$Fish_Species_Common <- str_to_lower(VTT_dataset$Fish_Species_Common)
 ### Combine VTT Fish TRaits with IL Fish Species List. 
 il_fish_traits <- left_join(il_fish_spp, VTT_dataset, by = c('Fish_Species_Scientific','Fish_Species_Common'))
 
-### Tolerance Data
-# Load Tolerance Data available from Ecological National Synthesis (ENS) Project "Fish Traits & Tolerance Data"
+### Load Tolerance Data
+# Tolerance Data available from Ecological National Synthesis (ENS) Project "Fish Traits & Tolerance Data"
 # Accessed from https://water.usgs.gov/nawqa/ecology/data.html on 2/21/19
 # See M.R. Meador and D.M. Carlisle.  2007.  Quantifying tolerance indicator values for common fish species of the United States. Ecological Indicators, 7:329-338.
 
-tolerance_2 <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Tolerance_Tables/ENS_FishToleranceIndicatorValuesTables.xlsx", sheet = "Species_Averages", col_names = T, na = "")
+tolerance_2 <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Tolerance_Tables/ENS_FishToleranceIndicatorValuesTables.xlsx", 
+                                  sheet = "W_Averages_With_Tolerance", col_names = T, na = "")
 
 # Load other tolerance data emailed from M.R. Meador to Dr. Yong Cao 
 tol_NRSA <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Tolerance_Tables/NRSA_Tolerant.xlsx", sheet = 1, col_names = T, na = "")
@@ -43,9 +46,9 @@ names(tolerance)[names(tolerance) == 'Common Name'] <- 'Fish_Species_Common'
 names(tolerance)[names(tolerance) == 'Scientific Name'] <- 'Fish_Species_Scientific'
 tolerance$Fish_Species_Common <- str_to_lower(tolerance$Fish_Species_Common)
 
-il_fish_traits <- left_join(il_fish_traits, tolerance, by =c('Fish_Species_Scientific','Fish_Species_Common'))
+il_fish_traits <- left_join(il_fish_traits, tolerance_2, by =c('Fish_Species_Scientific','Fish_Species_Common'))
 
-write.csv(il_fish_traits,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits.csv", na = "")
+write.csv(il_fish_traits,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "")
 
 ### Load Fish Data from 2014-2018 from CREP_Database 
 kasky_fish_table <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.xlsx", sheet = 1, col_names = T) %>%
