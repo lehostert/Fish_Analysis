@@ -33,6 +33,8 @@ il_fish_traits <- left_join(il_fish_spp, VTT_dataset, by = c('Fish_Species_Scien
 tolerance_2 <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Tolerance_Tables/ENS_FishToleranceIndicatorValuesTables.xlsx", 
                                   sheet = "W_Averages_With_Tolerance", col_names = T, na = "")
 
+il_fish_traits <- left_join(il_fish_traits, tolerance_2, by =c('Fish_Species_Scientific','Fish_Species_Common'))
+
 ### Load other tolerance data 
 # These are non-public data emailed from M.R. Meador to Dr. Yong Cao
 # They are some raw values that were used in prepr of Meador's 2007 paper
@@ -44,9 +46,9 @@ tolerance_2 <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CR
 # names(tolerance)[names(tolerance) == 'Common Name'] <- 'Fish_Species_Common'
 # names(tolerance)[names(tolerance) == 'Scientific Name'] <- 'Fish_Species_Scientific'
 # tolerance$Fish_Species_Common <- str_to_lower(tolerance$Fish_Species_Common)
+# 
+# il_fish_traits <- left_join(il_fish_traits, tolerance, by =c('Fish_Species_Scientific','Fish_Species_Common'))
 
-
-il_fish_traits <- left_join(il_fish_traits, tolerance_2, by =c('Fish_Species_Scientific','Fish_Species_Common'))
 
 ###Calulate Additional Binary Categories that will be used for metric calculations later
 
@@ -82,8 +84,17 @@ il_fish_traits$BENTHIC_INSECTIVORE <- ifelse((il_fish_traits$BENTHIC + il_fish_t
                                              0
 )
 
+
+
+il_fish_traits<- il_fish_traits %>% 
+  tidyr::replace_na(list(Nonnative = 0, Hybrid = 0, Unidentified_Species = 0))
+
+il_fish_traits$Nonnative <- ifelse(il_fish_traits$Nonnative == 'N', 1, 0)
+il_fish_traits$Hybrid <- ifelse(il_fish_traits$Hybrid == 'H', 1, 0)
+il_fish_traits$Unidentified_Species <- ifelse(il_fish_traits$Unidentified_Species == 'U', 1, 0)
+
 # Write it up
-# write.csv(il_fish_traits,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", row.names = F)
+write.csv(il_fish_traits,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", row.names = F)
 
 # END #
 #############################################

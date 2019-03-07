@@ -272,11 +272,11 @@ fecundity_by_total_length <- function(counts_and_traits) {
 # Load fish count data
 fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
 
-# Create unique Site_ID per sample
+# Create unique Site_ID per sample if this has not already been created
 fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
 fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
-#Add traits to fish count data
+# Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
 
 # Create Tibble with basic diversity indices from 'vegan'.
@@ -324,24 +324,19 @@ site_metric_tibble$ALIENPTAX <- round(site_metric_tibble$ALIENNTAX/site_metric_t
 site_metric_tibble$ALIENNIND <- num_ind_by_trait(fish_table, Nonnative, '1')
 site_metric_tibble$ALIENPIND <- round(site_metric_tibble$ALIENNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'tolerant')
+site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'TOLERANT')
 site_metric_tibble$TOLRPTAX <- round(site_metric_tibble$TOLRNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'tolerant')
+site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'TOLERANT')
 site_metric_tibble$TOLRPIND <- round(site_metric_tibble$TOLRNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'tolerant')
-site_metric_tibble$TOLRPTAX <- round(site_metric_tibble$TOLRNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'tolerant')
-site_metric_tibble$TOLRPIND <- round(site_metric_tibble$TOLRNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
-
-site_metric_tibble$SENSNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'sensitive')
+site_metric_tibble$SENSNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'INTOLERANT')
 site_metric_tibble$SENSPTAX <- round(site_metric_tibble$SENSNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$SENSNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'sensitive')
+site_metric_tibble$SENSNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'INTOLERANT')
 site_metric_tibble$SENSPIND <- round(site_metric_tibble$SENSNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$INTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'intermediate')
+site_metric_tibble$INTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'MODERATE')
 site_metric_tibble$INTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'intermediate')
+site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'MODERATE')
 site_metric_tibble$INTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 ##
