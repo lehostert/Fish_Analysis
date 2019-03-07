@@ -1,4 +1,4 @@
-# Script for Analysis of CREP Fish data NMDS by YEAR
+# Script for Analysis of CREP Fish Count Data NMDS by YEAR
 
 # Begin by running Per_Site_Fish_Metric_Tibble.R Script this will create needed data and load applicable packages.
 
@@ -23,9 +23,10 @@ sparse_fish.MDS.best <- metaMDS(sparse_fish.log, previous.best = sparse_fish.MDS
 sparse_fish.MDS.best
 plot(sparse_fish.MDS.best, type="t", main = "Fish MDS Bray-Curtis Best (stress = 0.219)")
 
-sparse_fish.MDS.euc <- metaMDS(sparse_fish.log, distance = "euclidean")
-sparse_fish.MDS.euc 
-plot(sparse_fish.MDS.euc, type="t", main = "Fish MDS Euclidean (stress= 0.164)")
+# sparse_fish.MDS.euc <- metaMDS(sparse_fish.log, distance = "euclidean")
+# sparse_fish.MDS.euc 
+# plot(sparse_fish.MDS.euc, type="t", main = "Fish MDS Euclidean (stress= 0.164)")
+
 #### The black clouds are clusters are sites that are all in the same streams
 ## The species names in the center of the plot are speces that are similarly found 
 ## in all of the streams, more balanced. The species on the edges are close to sites that are
@@ -151,3 +152,22 @@ plot(fish_2013.MDS, type="t", main = "2013 Fish MDS Bray-Curtis (stress = 0.185)
 fish_2013.BC <- vegdist(fish_2013.log, method = "bray")
 fish_2013.cluster <- hclust(fish_2013.BC, method = "complete", members = NULL)
 plot(fish_2013.cluster, type="t", main = "2013 Fish Cluster BC Complete")
+
+## Save Your Plots
+  file_out <- "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_MDS_counts/MDS_counts_by_year.pdf"
+  pdf(file_out)
+  plot(sparse_fish.MDS.best, type="t", main = "Fish MDS Bray-Curtis Best (stress = 0.219)")
+  plot(fish.cluster, main = "Fish Cluster BC Complete")
+  plot(fish_2018.MDS, type="t", main = "2018 Fish MDS Bray-Curtis (stress = 0.200)")
+  plot(fish_2018.cluster, main = "2018 Fish Cluster BC Complete")
+  plot(fish_2017.MDS, type="t", main = "2017 Fish MDS Bray-Curtis (stress = 0.231)")
+  plot(fish_2017.cluster, main = "2017 Fish Cluster BC Complete")
+  plot(fish_2016.MDS, type="t", main = "2016 Fish MDS Bray-Curtis (stress = 0.186)") 
+  plot(fish_2016.cluster, main = "2016 Fish Cluster BC Complete")
+  plot(fish_2015.MDS, type="t", main = "2015 Fish MDS Bray-Curtis (stress = 0.159)") 
+  plot(fish_2015.cluster, main = "2015 Fish Cluster BC Complete")
+  plot(fish_2014.MDS, type="t", main = "2014 Fish MDS Bray-Curtis (stress = 0.137)") 
+  plot(fish_2014.cluster, main = "2014 Fish Cluster BC Complete")
+  plot(fish_2013.MDS, type="t", main = "2013 Fish MDS Bray-Curtis (stress = 0.185)") 
+  plot(fish_2013.cluster, main = "2013 Fish Cluster BC Complete")
+  dev.off()
