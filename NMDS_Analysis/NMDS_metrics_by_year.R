@@ -24,6 +24,7 @@ fish_metrics[is.na(fish_metrics)] <- 0
 fish_metrics.MDS <- metaMDS(fish_metrics)
 fish_metrics.MDS
 plot(fish_metrics.MDS, type="t", main = "Fish MDS Bray-Curtis (stress = 0.152)")
+
 ## Start from previous best solution
 fish_metrics.MDS.best <- metaMDS(fish_metrics, previous.best = fish_metrics.MDS)
 fish_metrics.MDS.best
