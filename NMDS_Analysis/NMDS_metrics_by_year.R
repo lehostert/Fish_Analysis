@@ -4,11 +4,18 @@
 
 ## MDS
 # Now create row name in Site_Metric_Tibble data set for MDS analysis. Create row.names from Site_ID 
+
 fish_metrics <- site_metric_tibble
 row.names(fish_metrics) <- fish_metrics$Site_ID
 fish_metrics <- fish_metrics %>% select(-c(Site_ID))
 
-fish_metrics <- na.omit(fish_metrics)
+# BEWARE Replaces all NA and NaN values in dataframe
+# Purpose is to replace two Evenness values of 'NaN' in the fish_metrics data frame with '0' byt beware it will replace all. 
+fish_metrics[is.na(fish_metrics)] <- 0
+
+# Removes rows with incomplete cases
+# fish_metrics <- na.omit(fish_metrics)
+
 #######################################
 ## Log transform the data so that any outlying values are standarized.
 # fish_metrics.log <- log(fish_metrics+1)
@@ -16,11 +23,11 @@ fish_metrics <- na.omit(fish_metrics)
 # Global NMDS using metaMDS
 fish_metrics.MDS <- metaMDS(fish_metrics)
 fish_metrics.MDS
-plot(fish_metrics.MDS, type="t", main = "Fish MDS Bray-Curtis (stress = 0.176)")
+plot(fish_metrics.MDS, type="t", main = "Fish MDS Bray-Curtis (stress = 0.152)")
 ## Start from previous best solution
 fish_metrics.MDS.best <- metaMDS(fish_metrics, previous.best = fish_metrics.MDS)
 fish_metrics.MDS.best
-plot(fish_metrics.MDS.best, type="t", main = "Fish MDS Bray-Curtis Best (stress = 0.173)")
+plot(fish_metrics.MDS.best, type="t", main = "Fish MDS Bray-Curtis Best (stress = 0.152)")
 
 # fish_metrics.MDS.euc <- metaMDS(fish_metrics.log, distance = "euclidean")
 # fish_metrics.MDS.euc 
@@ -48,7 +55,7 @@ fish_2018 <- fish_2018 %>% select(-c(Site_ID))
 
 fish_2018.MDS <- metaMDS(fish_2018)
 fish_2018.MDS
-plot(fish_2018.MDS, type="t", main = "2018 Fish MDS Bray-Curtis (stress = 0.200)")
+plot(fish_2018.MDS, type="t", main = "2018 Fish MDS Bray-Curtis (stress = 0.11)")
 
 fish_2018.BC <- vegdist(fish_2018, method = "bray")
 fish_2018.cluster <- hclust(fish_2018.BC, method = "complete", members = NULL)
@@ -63,7 +70,7 @@ fish_2017 <- fish_2017 %>% select(-c(Site_ID))
 
 fish_2017.MDS <- metaMDS(fish_2017)
 fish_2017.MDS
-plot(fish_2017.MDS, type="t", main = "2017 Fish MDS Bray-Curtis (stress = 0.156)") 
+plot(fish_2017.MDS, type="t", main = "2017 Fish MDS Bray-Curtis (stress = 0.146)") 
 
 fish_2017.BC <- vegdist(fish_2017, method = "bray")
 fish_2017.cluster <- hclust(fish_2017.BC, method = "complete", members = NULL)
