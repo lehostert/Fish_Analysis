@@ -94,7 +94,7 @@ il_fish_traits$Hybrid <- ifelse(il_fish_traits$Hybrid == 'H', 1, 0)
 il_fish_traits$Unidentified_Species <- ifelse(il_fish_traits$Unidentified_Species == 'U', 1, 0)
 
 # Write it up
-write.csv(il_fish_traits,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", row.names = F)
+write.csv(il_fish_traits,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits.csv", na = "", row.names = F)
 
 # END #
 #############################################
