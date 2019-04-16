@@ -93,3 +93,4 @@ Gap_group_WT <- Gap_group_WT %>%
          WT_Alluvium_fluvial, WT_Attenuated_drift, WT_Bedrock, WT_Broken_rocky, WT_Coarse, WT_Coarse_moraine, WT_Colluvium, WT_Dune, WT_Fine_moraine, WT_Fines,
          WT_Icecontact, WT_Lacustrine, WT_Loess, WT_Medium, WT_Medium_moraine, WT_Outwash, WT_Outwash_icecontact, WT_Peat_muck, WT_Rocky)
 
+write.csv(Gap_group_WT, file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_WATERSHED_TOTAL.csv", row.names = F)
