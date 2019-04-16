@@ -282,7 +282,7 @@ fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", "")
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
 
-#Remove Hybrid or Unidentified Species from that analysis
+#Remove Hybrid or Unidentified Species from this analysis
 fish_table <- fish_table %>%
   filter (Hybrid == 0, Unidentified_Species == 0)
 
@@ -505,3 +505,6 @@ site_metric_tibble$COSUBNIND <- (num_ind_by_trait(fish_table, A_1_3A, '1') +
 )
 site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
+site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
+
+write.csv(site_metric_tibble, file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics.csv", na = ".", row.names = F)
