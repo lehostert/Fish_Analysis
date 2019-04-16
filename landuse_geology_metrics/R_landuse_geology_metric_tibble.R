@@ -91,3 +91,7 @@ Gap_group_R <- Gap_group_R %>%
          R_Urban, R_Agriculture, R_Grassland, R_Forest_total, R_Forested_upland, R_Forested_wetland, R_Inland_water, R_Open_wet, R_Wetland_total, R_Barren,
          R_Alluvium_fluvial, R_Attenuated_drift, R_Bedrock, R_Broken_rocky, R_Coarse, R_Coarse_moraine, R_Colluvium, R_Dune, R_Fine_moraine, R_Fines,
          R_Icecontact, R_Lacustrine, R_Loess, R_Medium, R_Medium_moraine, R_Outwash, R_Outwash_icecontact, R_Peat_muck, R_Rocky)
+
+
+write.csv(Gap_group_R, file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_RIPARIAN.csv", row.names = F)
+
