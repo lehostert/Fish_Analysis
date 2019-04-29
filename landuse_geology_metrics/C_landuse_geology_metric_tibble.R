@@ -100,3 +100,7 @@ Gap_group_C <- Gap_group_C %>%
          C_LSCS1P, C_LSCS2P, C_LSCS3P, C_LSCS4P, C_LSCS5P,
          C_ELEV_X, HYD_CAT)
 
+
+write.csv(Gap_group_C, file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_CHANNEL.csv", row.names = F)
+
+
