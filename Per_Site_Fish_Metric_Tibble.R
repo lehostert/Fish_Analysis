@@ -20,7 +20,7 @@ add_traits_to_data <- function(species_count_data) {
   #' @param species_count_data A dataframe with at least 3 collumns unique idenifying name for sample (Site_ID), 
   #' 3-letter short name for fish species (Fish_Species_Code), count of the number of that specific species sampled (Fish_Species_Count)
   #' 
-  #' This adds species specific trait informaiton compiled from the following sources:
+  #' This adds species specific trait informaition compiled from the following sources:
   #' VT Fish Traits
   #' Emmanuel Frimpong, and Paul L. Angermeier, 200811, Fish Traits Database: USGS,  https://doi.org/10.5066/F7WD3ZH8.
   #' Accessed from USGS sciencebase through https://www.sciencebase.gov/catalog/item/5a7c6e8ce4b00f54eb2318c0 on 2019-02-11
@@ -30,11 +30,16 @@ add_traits_to_data <- function(species_count_data) {
   #' Available from USGS Ecological National Synthesis (ENS) Project "Fish Traits & Tolerance Data"  https://water.usgs.gov/nawqa/ecology/data.html 
   #' Specifically <https://water.usgs.gov/nawqa/ecology/pubs/FishToleranceIndicatorValuesTables.xls> (accessed 2019-02-21)
   #' 
+  #' Additional Tolerance Class Data was communicated directly from Dr. M.R. Meador and filled in missing values for the following fish:
+  #' BGB, BUD, CAP, DUD, FRM, MUD, ORD, RDS, SES, SHD, SLD, SLM, SRD, SUM, SVS, WHS, YLB
+  #' 
   #' Calculated binary Values from VT Traits
   #' HERBIVORE = "1" if ALGPHYTO or MACVASCU or DETRITUS = 1 ,  "0" if none of them = 1
   #' OMNIVORE = "1" if more than one of HERBIVORE INVLVFSH FSHCRCRB BLOOD EGGS OTHER = 1,"0" if only one =1
   #' LITHOPHILIC = "1" if GRAVEL or COBBLE or BOULDER = 1, "0" if none of them = 1
   #' BENTHIC_INSECTIVORE = "1" if BENTHIC and INVLVFSH = 1 , "0" if one or both = 0
+  #' 
+  #' MIN and MAXTEMP values were added for WHS and CAP as -8.9 and 28.9 for the 30 year ave min (Jan) and ave max (July) from NOAA records for Champaign, IL
   
   
   il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", stringsAsFactors = F)
@@ -178,19 +183,17 @@ num_ind_by_trait <- function(counts_and_traits, desired_trait, value) {
 
 average_by_trait <- function(counts_and_traits, trait) {
   
-  #' Get number of unique taxa per specified trait per site (*NTAX)
+  #' Get average level of a cerain trait on a per Site_ID basis (*TAX)
+  #' For example average Suspended Sediment Tolerance for taxa at a site.  
   #' 
-  #' Create a named vector of the counts of the trait in question for
-  #' the site ids in the input tibble
+  #' Used to create fields for the final Site Metric Tibble. The return value
+  #' is a named vector to match the data structure of the other site metric fields.
   #' 
-  #' Used to create fields for the final Site Metric tibble. The return value
-  #' is a named vector to match the data structure of the other Site Metric fields.
+  #' Missing trait values (NAs) are excluded from computation.
   #' 
   #' @param counts_and_traits A tibble of count data and animal traits
   #' 
-  #' @param desired_trait The animal trait in question to filter.
-  #' 
-  #' @param value The value of the desired trait
+  #' @param trait The animal trait in question to filter (eg.Total Phosphorus Tolerance).
   
   # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
   # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
@@ -201,7 +204,7 @@ average_by_trait <- function(counts_and_traits, trait) {
   # Then mutate the DO mean to get a named vector of site IDs with the mean.
   site_id_average <- counts_and_traits %>% 
     dplyr::group_by(Site_ID) %>% 
-    dplyr::summarise(mean = mean(!!trait)) %>%
+    dplyr::summarise(mean = mean(!!trait, na.rm = TRUE)) %>%
     dplyr::select(x = mean, nm = Site_ID) %>%
     purrr::pmap(set_names) %>% 
     unlist
@@ -211,19 +214,18 @@ average_by_trait <- function(counts_and_traits, trait) {
 
 weighted_average_by_trait <- function(counts_and_traits, trait) {
   
-  #' Get number of unique taxa per specified trait per site (*NTAX)
+  #' Get average level of a cerain trait weighted by number of individuals per taxa at a given Site_ID (*IND)
+  #' For example average Suspended Sediment Tolerance for total individuals at a site.  
   #' 
-  #' Create a named vector of the counts of the trait in question for
-  #' the site ids in the input tibble
+  #' Used to create fields for the final Site Metric Tibble. The return value
+  #' is a named vector to match the data structure of the other site metric fields.
   #' 
-  #' Used to create fields for the final Site Metric tibble. The return value
-  #' is a named vector to match the data structure of the other Site Metric fields.
+  #' Missing trait values (NAs) are excluded from computation. 
   #' 
   #' @param counts_and_traits A tibble of count data and animal traits
   #' 
-  #' @param desired_trait The animal trait in question to filter.
-  #' 
-  #' @param value The value of the desired trait
+  #' @param trait The animal trait in question to filter (eg.Total Phosphorus Tolerance)
+
   
   # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
   # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
@@ -234,7 +236,7 @@ weighted_average_by_trait <- function(counts_and_traits, trait) {
   # Then mutate the DO mean to get a named vector of site IDs with the mean.
   site_id_w_average <- counts_and_traits %>% 
     dplyr::group_by(Site_ID) %>% 
-    dplyr::summarise(wmean = weighted.mean(!!trait, Fish_Species_Count)) %>%
+    dplyr::summarise(wmean = weighted.mean(!!trait, Fish_Species_Count, na.rm = TRUE)) %>%
     dplyr::select(x = wmean, nm = Site_ID) %>%
     purrr::pmap(set_names) %>% 
     unlist
@@ -276,8 +278,13 @@ fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/
 fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
 fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
+# Before moving on the fish count data must have the following 3 fields: "Site_ID" "Fish_species_Code" and "Fish_Species_Count"
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
+
+#Remove Hybrid or Unidentified Species from this analysis
+fish_table <- fish_table %>%
+  filter (Hybrid == 0, Unidentified_Species == 0)
 
 # Create Tibble with basic diversity indices from 'vegan'.
 # This tibble will be the base for storing all additional computed site metrics. 
@@ -498,3 +505,6 @@ site_metric_tibble$COSUBNIND <- (num_ind_by_trait(fish_table, A_1_3A, '1') +
 )
 site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
+site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
+
+write.csv(site_metric_tibble, file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics.csv", na = ".", row.names = F)
