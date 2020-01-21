@@ -10,6 +10,8 @@ library(tidyverse)
 library(vegan)
 library(docstring)
 
+# TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower
+
 #Create Functions
 
 add_traits_to_data <- function(species_count_data) {
@@ -272,13 +274,28 @@ fecundity_by_total_length <- function(counts_and_traits) {
 }
 
 # Load fish count data
-fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
+#TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
+
+## For CREP
+# fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
+
+## For IDNR Basin Data
+fish_data_path <- file.choose()
+fish_data <- readr::read_csv(fish_data_path, na = "")
 
 # Create unique Site_ID per sample if this has not already been created
-fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
-fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
+## For CREP
+# fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
+# fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
-# Before moving on the fish count data must have the following 3 fields: "Site_ID" "Fish_species_Code" and "Fish_Species_Count"
+## For IDNR Basin Data
+fish_data$Site_ID <-paste(str_replace_all(fish_data$reach_name, "[:blank:]", ""), str_replace_all(fish_data$date,"-",""), sep = "_")
+fish_data$Site_ID <-paste(str_replace_all(fish_data$reach_name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
+fish_data <- rename(fish_data, Fish_Species_Count == count)
+fish_data <- rename(fish_data, Fish_Species_Code == species_code)
+
+# Before moving on the fish count data must have the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
+
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
 
