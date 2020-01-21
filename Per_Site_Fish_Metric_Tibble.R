@@ -290,7 +290,6 @@ fish_data <- readr::read_csv(fish_data_path, na = "")
 
 ## For IDNR Basin Data
 fish_data$Site_ID <-paste(str_replace_all(fish_data$reach_name, "[:blank:]", ""), str_replace_all(fish_data$date,"-",""), sep = "_")
-fish_data$Site_ID <-paste(str_replace_all(fish_data$reach_name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 fish_data <- rename(fish_data, Fish_Species_Count == count)
 fish_data <- rename(fish_data, Fish_Species_Code == species_code)
 
