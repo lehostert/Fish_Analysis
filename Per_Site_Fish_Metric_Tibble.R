@@ -347,6 +347,11 @@ site_metric_tibble$ALIENPTAX <- round(site_metric_tibble$ALIENNTAX/site_metric_t
 site_metric_tibble$ALIENNIND <- num_ind_by_trait(fish_table, Nonnative, '1')
 site_metric_tibble$ALIENPIND <- round(site_metric_tibble$ALIENNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
+site_metric_tibble$NATIVNTAX <- num_taxa_by_trait(fish_table, Nonnative, '0')
+site_metric_tibble$NATIVPTAX <- round(site_metric_tibble$NATIVNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$NATIVNIND <- num_ind_by_trait(fish_table, Nonnative, '0')
+site_metric_tibble$NATIVPIND <- round(site_metric_tibble$NATIVNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
 ## Tolerance traits
 site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'TOLERANT')
 site_metric_tibble$TOLRPTAX <- round(site_metric_tibble$TOLRNTAX/site_metric_tibble$RICHNESS, digits = 3)
