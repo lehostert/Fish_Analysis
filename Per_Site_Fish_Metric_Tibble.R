@@ -106,6 +106,7 @@ num_taxa_by_trait <- function(counts_and_traits, desired_trait, value) {
   # Use quosure to be able to evaluate desired trait and remove the quotes the tidyverse is going to automatically put around it.
   # See <https://stackoverflow.com/questions/21815060/dplyr-how-to-use-group-by-inside-a-function>  OR
   # See Hadley's vingette <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html> for more details on why enquo is necessary.
+  # In dplyr (and in tidyeval in general) you use !! to say that you want to unquote an input so that it’s evaluated, not quoted.
   desired_trait <- dplyr::enquo(desired_trait) 
   
   # Filter out the family of interest
@@ -273,27 +274,24 @@ fecundity_by_total_length <- function(counts_and_traits) {
   return(site_id_fecund)
 }
 
-# Load fish count data
+#### Load fish count data ####
 #TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 
 ## For CREP
-# fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
+fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
 
 ## For IDNR Basin Data
-fish_data_path <- file.choose()
-fish_data <- readr::read_csv(fish_data_path, na = "")
+# fish_data_path <- file.choose()
+# fish_data <- readr::read_csv(fish_data_path, na = "")
 
-# Create unique Site_ID per sample if this has not already been created
-## For CREP
-# fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
-# fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
+#### Create unique Site_ID per sample if this has not already been created ####
+## For CREP and IDNR Basin data
+fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
+fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
-## For IDNR Basin Data
-fish_data$Site_ID <-paste(str_replace_all(fish_data$reach_name, "[:blank:]", ""), str_replace_all(fish_data$date,"-",""), sep = "_")
-fish_data <- rename(fish_data, Fish_Species_Count == count)
-fish_data <- rename(fish_data, Fish_Species_Code == species_code)
-
+#### Add fish traits ####
 # Before moving on the fish count data must have the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
+names(fish_data)
 
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
@@ -302,11 +300,13 @@ fish_table <- add_traits_to_data(fish_data)
 fish_table <- fish_table %>%
   filter (Hybrid == 0, Unidentified_Species == 0)
 
+#### Create Metric Tibble ####
 # Create Tibble with basic diversity indices from 'vegan'.
 # This tibble will be the base for storing all additional computed site metrics. 
 site_metric_tibble <- create_site_metric_tibble(fish_table)
 
 # Compute and add additional site metrics to site_metric_tibble
+# Taxonomic traits
 site_metric_tibble$CATONTAX <- num_taxa_by_trait(fish_table, Family, 'Catostomidae')
 site_metric_tibble$CATOPTAX <- round(site_metric_tibble$CATONTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$CATONIND <- num_ind_by_trait(fish_table, Family, 'Catostomidae')
@@ -347,6 +347,7 @@ site_metric_tibble$ALIENPTAX <- round(site_metric_tibble$ALIENNTAX/site_metric_t
 site_metric_tibble$ALIENNIND <- num_ind_by_trait(fish_table, Nonnative, '1')
 site_metric_tibble$ALIENPIND <- round(site_metric_tibble$ALIENNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
+## Tolerance traits
 site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'TOLERANT')
 site_metric_tibble$TOLRPTAX <- round(site_metric_tibble$TOLRNTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'TOLERANT')
@@ -362,7 +363,6 @@ site_metric_tibble$INTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_t
 site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'MODERATE')
 site_metric_tibble$INTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-##
 site_metric_tibble$DOTOLTAX <- average_by_trait(fish_table, Dissolved_Oxygen)
 site_metric_tibble$DOTOLIND <- weighted_average_by_trait(fish_table, Dissolved_Oxygen)
 
@@ -509,15 +509,15 @@ site_metric_tibble$BENTINVNIND <- num_ind_by_trait(fish_table, BENTHIC_INSECTIVO
 site_metric_tibble$BENTINVPIND <- round(site_metric_tibble$BENTINVNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$COSUBNTAX <- (num_taxa_by_trait(fish_table, A_1_3A, '1') + 
-                                    num_taxa_by_trait(fish_table, A_1_3B, '1') + 
-                                    num_taxa_by_trait(fish_table, A_2_3A, '1') +
-                                    num_taxa_by_trait(fish_table, A_2_3B, '1') 
+                                 num_taxa_by_trait(fish_table, A_1_3B, '1') + 
+                                 num_taxa_by_trait(fish_table, A_2_3A, '1') +
+                                 num_taxa_by_trait(fish_table, A_2_3B, '1') 
 )
 site_metric_tibble$COSUBPTAX <- round(site_metric_tibble$COSUBNTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$COSUBNIND <- (num_ind_by_trait(fish_table, A_1_3A, '1') + 
-                                    num_ind_by_trait(fish_table, A_1_3B, '1') + 
-                                    num_ind_by_trait(fish_table, A_2_3A, '1') +
-                                    num_ind_by_trait(fish_table, A_2_3B, '1')
+                                 num_ind_by_trait(fish_table, A_1_3B, '1') + 
+                                 num_ind_by_trait(fish_table, A_2_3A, '1') +
+                                 num_ind_by_trait(fish_table, A_2_3B, '1')
 )
 site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
