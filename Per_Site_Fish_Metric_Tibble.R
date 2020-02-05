@@ -9,6 +9,7 @@
 library(tidyverse)
 library(vegan)
 library(docstring)
+library(svDialogs)
 
 # TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower to make more generic
 
@@ -279,9 +280,18 @@ fecundity_by_total_length <- function(counts_and_traits) {
 #TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 
 ## For CREP
+
+prefix_list <- c("//INHS-Bison","/Volumes")
+network_prefix <- svDialogs::dlg_list(prefix_list, title = "Which network prefix?", Sys.info()["user"])$res
+
+# All
+fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
+
+
 #PC
 # fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
 
+#Mac
 fish_data <- read.csv("/Volumes/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv", na = "", stringsAsFactors = F)
 
 #### For IDNR Basin Data ####
@@ -536,4 +546,4 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
-write.csv(site_metric_tibble, file = "/Volumes/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2018.csv", na = ".", row.names = F)
+write.csv(site_metric_tibble, file = paste0(computer_type,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2018.csv", na = ".", row.names = F)
