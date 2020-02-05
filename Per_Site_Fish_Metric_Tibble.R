@@ -10,7 +10,7 @@ library(tidyverse)
 library(vegan)
 library(docstring)
 
-# TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower
+# TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower to make more generic
 
 #Create Functions
 
@@ -44,7 +44,8 @@ add_traits_to_data <- function(species_count_data) {
   #' MIN and MAXTEMP values were added for WHS and CAP as -8.9 and 28.9 for the 30 year ave min (Jan) and ave max (July) from NOAA records for Champaign, IL
   
   
-  il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", stringsAsFactors = F)
+  il_fish_traits <- read.csv("/Volumes/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", stringsAsFactors = F)
+  il_fish_traits$Native_Intolerant <- ifelse(il_fish_traits$Nonnative == '0' & il_fish_traits$Tolerance_Class == 'INTOLERANT', 1, 0)
   
   fish_table <- species_count_data %>% 
     select(c(Site_ID, Fish_Species_Code, Fish_Species_Count))%>%
@@ -78,7 +79,7 @@ create_site_metric_tibble <- function(counts_and_traits) {
   INDIVIDUALS <- rowSums(sparse_fish_data)
   RICHNESS <- rowSums(sparse_fish_data != 0) 
   DIVERSITY <- vegan::diversity(sparse_fish_data, index = "shannon")
-  EVENNESS <- vegan::diversity(sparse_fish_data)/log(specnumber(sparse_fish_data))
+  EVENNESS <- vegan::diversity(sparse_fish_data)/log(vegan::specnumber(sparse_fish_data))
   
   # Create dataframe from computed metrics and convert row names back to a collumn in the dataframe.
   # Consider making this a tibble directly instead of a dataframe. 
@@ -278,15 +279,18 @@ fecundity_by_total_length <- function(counts_and_traits) {
 #TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 
 ## For CREP
-fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
+#PC
+# fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
 
-## For IDNR Basin Data
+fish_data <- read.csv("/Volumes/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv", na = "", stringsAsFactors = F)
+
+#### For IDNR Basin Data ####
 # fish_data_path <- file.choose()
 # fish_data <- readr::read_csv(fish_data_path, na = "")
 
 #### Create unique Site_ID per sample if this has not already been created ####
 ## For CREP and IDNR Basin data
-fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
+fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%y")
 fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
 #### Add fish traits ####
@@ -391,8 +395,7 @@ site_metric_tibble$TEMPMAXTOLIND <- weighted_average_by_trait(fish_table, MAXTEM
 site_metric_tibble$TEMPMINTOLTAX <- average_by_trait(fish_table, MINTEMP)
 site_metric_tibble$TEMPMINTOLIND <- weighted_average_by_trait(fish_table, MINTEMP)
 
-# site_metric_tibble$BEGINSPAWN_MM <-
-## Different function must be created for this type of metric. Average Month does not make sense so need for re-evaluating metric.
+# Life history traits
 
 site_metric_tibble$SPAWNDUR <- average_by_trait(fish_table, SEASON)
 site_metric_tibble$FECUNDITY_TL <- fecundity_by_total_length(fish_table)
@@ -533,4 +536,4 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
-write.csv(site_metric_tibble, file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics.csv", na = ".", row.names = F)
+write.csv(site_metric_tibble, file = "/Volumes/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2018.csv", na = ".", row.names = F)
