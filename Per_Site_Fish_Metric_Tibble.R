@@ -279,7 +279,7 @@ fecundity_by_total_length <- function(counts_and_traits) {
 #### Load fish count data ####
 #TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 
-## For CREP
+## For CREP data
 
 prefix_list <- c("//INHS-Bison","/Volumes")
 network_prefix <- svDialogs::dlg_list(prefix_list, title = "Which network prefix?", Sys.info()["user"])$res
