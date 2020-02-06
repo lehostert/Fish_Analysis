@@ -9,11 +9,20 @@
 library(tidyverse)
 library(vegan)
 library(docstring)
-library(svDialogs)
+
+
+#### Set up access to INHS-Bison Network Drive ####
+network_prefix <- "//INHS-Bison"
+# TODO find way to select network prefixes.
+# library(svDialogs)
+# prefix_list <- c("//INHS-Bison","/Volumes")
+# network_prefix <- svDialogs::dlg_list(prefix_list, title = "Which network prefix?", Sys.info()["user"])$res
+# select.list(prefix_list, multiple = FALSE,
+#             title = "Which Network drive prefix?", graphics = getOption("menu.graphics"))
 
 # TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower to make more generic
 
-#Create Functions
+#### Create Functions ####
 
 add_traits_to_data <- function(species_count_data) {
   
@@ -45,7 +54,7 @@ add_traits_to_data <- function(species_count_data) {
   #' MIN and MAXTEMP values were added for WHS and CAP as -8.9 and 28.9 for the 30 year ave min (Jan) and ave max (July) from NOAA records for Champaign, IL
   
   
-  il_fish_traits <- read.csv("/Volumes/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", stringsAsFactors = F)
+  il_fish_traits <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv"), na = "", stringsAsFactors = F)
   il_fish_traits$Native_Intolerant <- ifelse(il_fish_traits$Nonnative == '0' & il_fish_traits$Tolerance_Class == 'INTOLERANT', 1, 0)
   
   fish_table <- species_count_data %>% 
@@ -281,26 +290,17 @@ fecundity_by_total_length <- function(counts_and_traits) {
 
 ## For CREP data
 
-prefix_list <- c("//INHS-Bison","/Volumes")
-network_prefix <- svDialogs::dlg_list(prefix_list, title = "Which network prefix?", Sys.info()["user"])$res
-
 # All
+
 fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
 
-
-#PC
-# fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
-
-#Mac
-fish_data <- read.csv("/Volumes/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv", na = "", stringsAsFactors = F)
-
-#### For IDNR Basin Data ####
+## For IDNR Basin Data ##
 # fish_data_path <- file.choose()
 # fish_data <- readr::read_csv(fish_data_path, na = "")
 
 #### Create unique Site_ID per sample if this has not already been created ####
 ## For CREP and IDNR Basin data
-fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%y")
+fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
 fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
 #### Add fish traits ####
@@ -310,7 +310,7 @@ names(fish_data)
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
 
-#Remove Hybrid or Unidentified Species from this analysis
+# Remove Hybrid or Unidentified Species from this analysis
 fish_table <- fish_table %>%
   filter (Hybrid == 0, Unidentified_Species == 0)
 
