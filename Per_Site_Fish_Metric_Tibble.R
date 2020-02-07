@@ -89,7 +89,7 @@ create_site_metric_tibble <- function(counts_and_traits) {
   INDIVIDUALS <- rowSums(sparse_fish_data)
   RICHNESS <- rowSums(sparse_fish_data != 0) 
   DIVERSITY <- vegan::diversity(sparse_fish_data, index = "shannon")
-  EVENNESS <- vegan::diversity(sparse_fish_data)/log(vegan::specnumber(sparse_fish_data))
+  EVENNESS <- vegan::diversity(sparse_fish_data, index = "shannon")/log(vegan::specnumber(sparse_fish_data))
   
   # Create dataframe from computed metrics and convert row names back to a collumn in the dataframe.
   # Consider making this a tibble directly instead of a dataframe. 
