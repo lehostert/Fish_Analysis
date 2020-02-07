@@ -354,9 +354,9 @@ site_metric_tibble$ICTANIND <- num_ind_by_trait(fish_table, Family, 'Ictaluridae
 site_metric_tibble$ICTAPIND <- round(site_metric_tibble$ICTANIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$PERCNTAX <- num_taxa_by_trait(fish_table, Family, 'Percidae')
-site_metric_tibble$PERCPTAX <- round(site_metric_tibble$ICTANTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$PERCPTAX <- round(site_metric_tibble$PERCNTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$PERCNIND <- num_ind_by_trait(fish_table, Family, 'Percidae')
-site_metric_tibble$PERCPIND <- round(site_metric_tibble$ICTANIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+site_metric_tibble$PERCPIND <- round(site_metric_tibble$PERCNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$ALIENNTAX <- num_taxa_by_trait(fish_table, Nonnative, '1')
 site_metric_tibble$ALIENPTAX <- round(site_metric_tibble$ALIENNTAX/site_metric_tibble$RICHNESS, digits = 3)
