@@ -135,8 +135,8 @@ num_taxa_by_trait <- function(counts_and_traits, desired_trait, value) {
   # get a named vector of site IDs with the filtered family count
 
   site_id_taxa_by_trait <- site_id_tibble %>% 
-    left_join(n_taxa_by_trait, by = "Site_ID") %>% 
-    replace_na(list(count = 0)) %>% 
+    dplyr::left_join(n_taxa_by_trait, by = "Site_ID") %>% 
+    tidyr::replace_na(list(count = 0)) %>% 
     dplyr::select(x = count, nm = Site_ID) %>% 
     purrr::pmap(set_names) %>% 
     unlist
@@ -177,14 +177,13 @@ num_ind_by_trait <- function(counts_and_traits, desired_trait, value) {
   # Group counts by site ID (this will be a template to overwrite)
   site_id_tibble <- counts_and_traits %>% 
     dplyr::group_by(Site_ID) %>% 
-    dplyr::summarise(count = n())
+    dplyr::summarise(sp_count = n())
   
   # Then mutate the counts to be those of n_taxa_by_family to
   # get a named vector of site IDs with the filtered family count
   site_id_ind_by_trait <- site_id_tibble %>%
-    dplyr::mutate(count = ifelse(Site_ID %in% n_ind_by_trait$Site_ID, 
-                                 n_ind_by_trait$count,
-                                 0)) %>%
+    dplyr::left_join(n_ind_by_trait, by = "Site_ID") %>% 
+    tidyr::replace_na(list(count = 0))%>%
     dplyr::select(x = count, nm = Site_ID) %>%
     purrr::pmap(set_names) %>% 
     unlist
@@ -353,6 +352,11 @@ site_metric_tibble$ICTANTAX <- num_taxa_by_trait(fish_table, Family, 'Ictalurida
 site_metric_tibble$ICTAPTAX <- round(site_metric_tibble$ICTANTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$ICTANIND <- num_ind_by_trait(fish_table, Family, 'Ictaluridae')
 site_metric_tibble$ICTAPIND <- round(site_metric_tibble$ICTANIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$PERCNTAX <- num_taxa_by_trait(fish_table, Family, 'Percidae')
+site_metric_tibble$PERCPTAX <- round(site_metric_tibble$ICTANTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$PERCNIND <- num_ind_by_trait(fish_table, Family, 'Percidae')
+site_metric_tibble$PERCPIND <- round(site_metric_tibble$ICTANIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$ALIENNTAX <- num_taxa_by_trait(fish_table, Nonnative, '1')
 site_metric_tibble$ALIENPTAX <- round(site_metric_tibble$ALIENNTAX/site_metric_tibble$RICHNESS, digits = 3)
@@ -544,4 +548,4 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
-write.csv(site_metric_tibble, file = paste0(computer_type,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2018.csv", na = ".", row.names = F)
+write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2018_fixed.csv"), na = ".", row.names = F)
