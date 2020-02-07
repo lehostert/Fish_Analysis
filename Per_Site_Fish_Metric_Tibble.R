@@ -129,17 +129,15 @@ num_taxa_by_trait <- function(counts_and_traits, desired_trait, value) {
   # Group counts by site ID (this will be a template to overwrite)
   site_id_tibble <- counts_and_traits %>% 
     dplyr::group_by(Site_ID) %>% 
-    dplyr::summarise(count = n())
+    dplyr::summarise(sp_count = n())
   
   # Then mutate the counts to be those of n_taxa_by_family to
   # get a named vector of site IDs with the filtered family count
-  #### LEH: When I run this outside of the function it seems that this does not retain the site ID information. 
-  # Can we discuss whether or not this matter given the intended use of this function 
-  site_id_taxa_by_trait <- site_id_tibble %>%
-    dplyr::mutate(count = ifelse(Site_ID %in% n_taxa_by_trait$Site_ID, 
-                                 n_taxa_by_trait$count,
-                                 0)) %>%
-    dplyr::select(x = count, nm = Site_ID) %>%
+
+  site_id_taxa_by_trait <- site_id_tibble %>% 
+    left_join(n_taxa_by_trait, by = "Site_ID") %>% 
+    replace_na(list(count = 0)) %>% 
+    dplyr::select(x = count, nm = Site_ID) %>% 
     purrr::pmap(set_names) %>% 
     unlist
   
