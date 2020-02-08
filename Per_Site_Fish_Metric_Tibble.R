@@ -10,9 +10,19 @@ library(tidyverse)
 library(vegan)
 library(docstring)
 
-# TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower
 
-#Create Functions
+#### Set up access to INHS-Bison Network Drive ####
+network_prefix <- "//INHS-Bison"
+# TODO find way to select network prefixes.
+# library(svDialogs)
+# prefix_list <- c("//INHS-Bison","/Volumes")
+# network_prefix <- svDialogs::dlg_list(prefix_list, title = "Which network prefix?", Sys.info()["user"])$res
+# select.list(prefix_list, multiple = FALSE,
+#             title = "Which Network drive prefix?", graphics = getOption("menu.graphics"))
+
+# TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower to make more generic
+
+#### Create Functions ####
 
 add_traits_to_data <- function(species_count_data) {
   
@@ -44,7 +54,8 @@ add_traits_to_data <- function(species_count_data) {
   #' MIN and MAXTEMP values were added for WHS and CAP as -8.9 and 28.9 for the 30 year ave min (Jan) and ave max (July) from NOAA records for Champaign, IL
   
   
-  il_fish_traits <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv", na = "", stringsAsFactors = F)
+  il_fish_traits <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits_complete.csv"), na = "", stringsAsFactors = F)
+  il_fish_traits$Native_Intolerant <- ifelse(il_fish_traits$Nonnative == '0' & il_fish_traits$Tolerance_Class == 'INTOLERANT', 1, 0)
   
   fish_table <- species_count_data %>% 
     select(c(Site_ID, Fish_Species_Code, Fish_Species_Count))%>%
@@ -78,7 +89,7 @@ create_site_metric_tibble <- function(counts_and_traits) {
   INDIVIDUALS <- rowSums(sparse_fish_data)
   RICHNESS <- rowSums(sparse_fish_data != 0) 
   DIVERSITY <- vegan::diversity(sparse_fish_data, index = "shannon")
-  EVENNESS <- vegan::diversity(sparse_fish_data)/log(specnumber(sparse_fish_data))
+  EVENNESS <- vegan::diversity(sparse_fish_data, index = "shannon")/log(vegan::specnumber(sparse_fish_data))
   
   # Create dataframe from computed metrics and convert row names back to a collumn in the dataframe.
   # Consider making this a tibble directly instead of a dataframe. 
@@ -118,17 +129,15 @@ num_taxa_by_trait <- function(counts_and_traits, desired_trait, value) {
   # Group counts by site ID (this will be a template to overwrite)
   site_id_tibble <- counts_and_traits %>% 
     dplyr::group_by(Site_ID) %>% 
-    dplyr::summarise(count = n())
+    dplyr::summarise(sp_count = n())
   
   # Then mutate the counts to be those of n_taxa_by_family to
   # get a named vector of site IDs with the filtered family count
-  #### LEH: When I run this outside of the function it seems that this does not retain the site ID information. 
-  # Can we discuss whether or not this matter given the intended use of this function 
-  site_id_taxa_by_trait <- site_id_tibble %>%
-    dplyr::mutate(count = ifelse(Site_ID %in% n_taxa_by_trait$Site_ID, 
-                                 n_taxa_by_trait$count,
-                                 0)) %>%
-    dplyr::select(x = count, nm = Site_ID) %>%
+
+  site_id_taxa_by_trait <- site_id_tibble %>% 
+    dplyr::left_join(n_taxa_by_trait, by = "Site_ID") %>% 
+    tidyr::replace_na(list(count = 0)) %>% 
+    dplyr::select(x = count, nm = Site_ID) %>% 
     purrr::pmap(set_names) %>% 
     unlist
   
@@ -168,14 +177,13 @@ num_ind_by_trait <- function(counts_and_traits, desired_trait, value) {
   # Group counts by site ID (this will be a template to overwrite)
   site_id_tibble <- counts_and_traits %>% 
     dplyr::group_by(Site_ID) %>% 
-    dplyr::summarise(count = n())
+    dplyr::summarise(sp_count = n())
   
   # Then mutate the counts to be those of n_taxa_by_family to
   # get a named vector of site IDs with the filtered family count
   site_id_ind_by_trait <- site_id_tibble %>%
-    dplyr::mutate(count = ifelse(Site_ID %in% n_ind_by_trait$Site_ID, 
-                                 n_ind_by_trait$count,
-                                 0)) %>%
+    dplyr::left_join(n_ind_by_trait, by = "Site_ID") %>% 
+    tidyr::replace_na(list(count = 0))%>%
     dplyr::select(x = count, nm = Site_ID) %>%
     purrr::pmap(set_names) %>% 
     unlist
@@ -277,10 +285,13 @@ fecundity_by_total_length <- function(counts_and_traits) {
 #### Load fish count data ####
 #TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 
-## For CREP
-fish_data <- read.csv("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.csv", na = "", stringsAsFactors = F)
+## For CREP data
 
-## For IDNR Basin Data
+# All
+
+fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
+
+## For IDNR Basin Data ##
 # fish_data_path <- file.choose()
 # fish_data <- readr::read_csv(fish_data_path, na = "")
 
@@ -296,7 +307,7 @@ names(fish_data)
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
 
-#Remove Hybrid or Unidentified Species from this analysis
+# Remove Hybrid or Unidentified Species from this analysis
 fish_table <- fish_table %>%
   filter (Hybrid == 0, Unidentified_Species == 0)
 
@@ -341,6 +352,11 @@ site_metric_tibble$ICTANTAX <- num_taxa_by_trait(fish_table, Family, 'Ictalurida
 site_metric_tibble$ICTAPTAX <- round(site_metric_tibble$ICTANTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$ICTANIND <- num_ind_by_trait(fish_table, Family, 'Ictaluridae')
 site_metric_tibble$ICTAPIND <- round(site_metric_tibble$ICTANIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+
+site_metric_tibble$PERCNTAX <- num_taxa_by_trait(fish_table, Family, 'Percidae')
+site_metric_tibble$PERCPTAX <- round(site_metric_tibble$PERCNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$PERCNIND <- num_ind_by_trait(fish_table, Family, 'Percidae')
+site_metric_tibble$PERCPIND <- round(site_metric_tibble$PERCNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$ALIENNTAX <- num_taxa_by_trait(fish_table, Nonnative, '1')
 site_metric_tibble$ALIENPTAX <- round(site_metric_tibble$ALIENNTAX/site_metric_tibble$RICHNESS, digits = 3)
@@ -391,8 +407,7 @@ site_metric_tibble$TEMPMAXTOLIND <- weighted_average_by_trait(fish_table, MAXTEM
 site_metric_tibble$TEMPMINTOLTAX <- average_by_trait(fish_table, MINTEMP)
 site_metric_tibble$TEMPMINTOLIND <- weighted_average_by_trait(fish_table, MINTEMP)
 
-# site_metric_tibble$BEGINSPAWN_MM <-
-## Different function must be created for this type of metric. Average Month does not make sense so need for re-evaluating metric.
+# Life history traits
 
 site_metric_tibble$SPAWNDUR <- average_by_trait(fish_table, SEASON)
 site_metric_tibble$FECUNDITY_TL <- fecundity_by_total_length(fish_table)
@@ -533,4 +548,4 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
-write.csv(site_metric_tibble, file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics.csv", na = ".", row.names = F)
+write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2018_fixed.csv"), na = ".", row.names = F)
