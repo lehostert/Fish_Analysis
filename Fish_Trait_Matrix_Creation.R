@@ -92,6 +92,7 @@ il_fish_traits<- il_fish_traits %>%
 il_fish_traits$Nonnative <- ifelse(il_fish_traits$Nonnative == 'N', 1, 0)
 il_fish_traits$Hybrid <- ifelse(il_fish_traits$Hybrid == 'H', 1, 0)
 il_fish_traits$Unidentified_Species <- ifelse(il_fish_traits$Unidentified_Species == 'U', 1, 0)
+il_fish_traits$Native_Intolerant <- ifelse(il_fish_traits$Nonnative == '0' & il_fish_traits$Tolerance_Class == 'INTOLERANT', 1, 0)
 
 # Write it up
 write.csv(il_fish_traits,"//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Illinois_fish_traits.csv", na = "", row.names = F)
