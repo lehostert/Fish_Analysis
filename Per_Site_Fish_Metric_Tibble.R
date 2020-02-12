@@ -289,7 +289,9 @@ fecundity_by_total_length <- function(counts_and_traits) {
 
 # All
 
-fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
+# fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
+
+fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/idnr_kaskaskia_basin_survey_data_1997-2012_READY_ef.csv"), na = "", stringsAsFactors = F)
 
 ## For IDNR Basin Data ##
 # fish_data_path <- file.choose()
@@ -297,8 +299,8 @@ fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP
 
 #### Create unique Site_ID per sample if this has not already been created ####
 ## For CREP and IDNR Basin data
-fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
-fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
+# fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
+fish_data$Site_ID <-paste(str_replace_all(fish_data$reach_name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
 #### Add fish traits ####
 # Before moving on the fish count data must have the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
@@ -548,4 +550,4 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
-write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2018_fixed.csv"), na = ".", row.names = F)
+write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_IDNR_Basin_fit.csv"), na = ".", row.names = F)
