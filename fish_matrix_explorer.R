@@ -31,10 +31,3 @@ ggplot2::ggplot(fish_df, aes(x = richness, fill= data_source)) +
   scale_fill_manual(values=c("darkorchid1", "grey43", "#56B4E9"))
 
 summary(fish_df)
-
-# list <-lapply(1:ncol(mtcars),
-#               function(col) ggplot2::qplot(mtcars[[col]],
-#                                            geom = "histogram",
-#                                            binwidth = 1))
-# 
-# cowplot::plot_grid(plotlist = list)
