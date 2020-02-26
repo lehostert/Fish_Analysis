@@ -1,7 +1,7 @@
 library(tidyverse)
 
-network_prefix <- "//INHS-Bison"
-# network_prefix <- "/Volumes"
+# network_prefix <- "//INHS-Bison"
+network_prefix <- "/Volumes"
 
 fish <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_full.csv"), na = c("", "."))
 names(fish) <- stringr::str_to_lower(names(fish))
@@ -14,25 +14,86 @@ fish <- fish %>%
 
 summary(fish)
 
-metric_list <- fish %>%
-  select(-c(site_id, data_source)) %>% 
-  names()
-sum_df[[i]] <- for (i in metric_list) {
-  
-  fish %>%   
-  summarize(mmse_mean = mean(i),   
-            mmse_se = sd(i)/sqrt(n()),
-            n_samples = n())
-    }
+ggplot2::ggplot(melt(fish), aes(x = value)) +
+  geom_histogram() +
+  theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+  labs(title=paste0("Kaskaskia Basin Fish Metrics"), y = "Count") +
+  facet_wrap(~variable, scales = "free")
 
-by_metrics <- fish %>%
-  select(-c(site_id, data_source))
+#### Trial by Fire Work around ####
+# metric_list <- fish %>%
+#   select(-c(site_id, data_source)) %>% 
+#   names()
+# 
+# sum_df[[i]] <- for (i in metric_list) {
+#   
+#   fish %>%   
+#   summarize(mmse_mean = mean(i),   
+#             mmse_se = sd(i)/sqrt(n()),
+#             n_samples = n())
+#     }
+# 
+# by_metrics <- fish %>%
+#   select(-c(site_id, data_source))
+# 
+# sum_df <- by_metrics %>%
+#   summarise_all(list(~mean(.), ~sd(.), ~IQR(.), ~var(.), ~n_distinct(.)))
 
-sum_df <- by_metrics %>%
-  summarise_all(list(~mean(.), ~sd(.), ~IQR(.), ~var(.), ~n_distinct(.)))
-  
 
+#### Loop Trial ####
 
+# metric_list <- fish %>%
+#   select(-c(site_id, data_source)) %>%
+#   names()
+# 
+# pdf(file="metric_plots.pdf")
+# 
+# plot_list = list()
+# 
+# for (i in metric_list) {
+#    p = ggplot2::ggplot(fish, aes(x = i, fill= data_source)) +
+#     geom_histogram() +
+#     theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+#     labs(title=paste0("Kaskaskia Basin Fish- ", i),x=paste0(i), y = "Count", fill = "Survey Type") +
+#     scale_color_manual(values=c("darkorchid1", "grey43", "#56B4E9")) +
+#     scale_fill_manual(values=c("darkorchid1", "grey43", "#56B4E9"))
+#    plot_list[[i]] = p
+# 
+#    print(plot_list[[i]])
+# }
+# 
+# dev.off()
+
+# fish2 <- fish %>%
+#   select(-c((tidyselect::vars_select(names(fish), ends_with('ntax', ignore.case = TRUE)))))
+# 
+# 
+# ggplot2::ggplot(fish, aes(x = individuals, fill= data_source)) +
+#   geom_histogram() +
+#   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+#   labs(title=paste0("Kaskaskia Basin Fish- Individuals"), x= "Individuals", y = "Count", fill = "Survey Type") +
+#   scale_color_manual(values=c("darkorchid1", "grey43", "#56B4E9")) +
+#   scale_fill_manual(values=c("darkorchid1", "grey43", "#56B4E9"))
+# 
+# ggplot2::ggplot(fish, aes(x = catontax, fill= data_source)) +
+#   geom_histogram() +
+#   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+#   labs(title=paste0("Kaskaskia Basin Fish- Catontax"), x= "Catontax", y = "Count", fill = "Survey Type") +
+#   scale_color_manual(values=c("darkorchid1", "grey43", "#56B4E9")) +
+#   scale_fill_manual(values=c("darkorchid1", "grey43", "#56B4E9"))
+# 
+# ggplot2::ggplot(fish, aes(x = catopind)) +
+#   geom_histogram() +
+#   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+#   labs(title=paste0("Kaskaskia Basin Fish- Catopind"), x= "Catopind", y = "Count") +
+#   scale_color_manual(values=c("darkorchid1", "grey43", "#56B4E9")) +
+#   scale_fill_manual(values=c("darkorchid1", "grey43", "#56B4E9"))
+# 
+# ggplot2::ggplot(melt(fish), aes(x = value)) +
+#   geom_histogram() +
+#   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+#   labs(title=paste0("Kaskaskia Basin Fish Metrics"), y = "Count") +
+#   facet_wrap(~variable, scales = "free")
 
 #### Below there be dragons ####
 # 
@@ -41,7 +102,7 @@ sum_df <- by_metrics %>%
 # 
 # summary(fish2)
 # 
-# metric_list <- fish2 %>%
+# metric_list <- fish %>%
 #   select(-c(site_id, data_source)) %>% 
 #   names()
 # 
