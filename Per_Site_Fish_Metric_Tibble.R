@@ -306,6 +306,11 @@ fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", "")
 # Before moving on the fish count data must have the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 names(fish_data)
 
+id_table <- fish_data %>% 
+  select(Site_ID, PU_Gap_Code, Reach_Name, Event_Date) %>% 
+  unique()
+write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
+# write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_Drake_1991-2007.csv"))
 
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
@@ -541,7 +546,7 @@ site_metric_tibble$COSUBNTAX <- (num_taxa_by_trait(fish_table, A_1_3A, '1') +
                                  num_taxa_by_trait(fish_table, A_1_3B, '1') + 
                                  num_taxa_by_trait(fish_table, A_2_3A, '1') +
                                  num_taxa_by_trait(fish_table, A_2_3B, '1') 
-)
+) 
 site_metric_tibble$COSUBPTAX <- round(site_metric_tibble$COSUBNTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$COSUBNIND <- (num_ind_by_trait(fish_table, A_1_3A, '1') + 
                                  num_ind_by_trait(fish_table, A_1_3B, '1') + 
