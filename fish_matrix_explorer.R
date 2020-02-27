@@ -37,21 +37,29 @@ tester <- melt(fish)
 #     }
 
 by_metrics <- fish %>%
-  select(-c(site_id, data_source))
+  select(-c(site_id, data_source)) %>% 
+  rename(fecunditytl = fecundity_tl)
 
-sum_df <- tester %>%
-  group_by(variable) %>% 
-  summarise_all(list(~mean(.), ~sd(.), ~IQR(.), ~var(.), ~n_distinct(.))) %>% 
-  ungroup()
-
-
-
+sum_df <- by_metrics %>%
+  summarise_all(list(~mean(.), ~sd(.), ~IQR(.), ~var(.), n(), ~n_distinct(.), ~skewness(.), ~kurtosis(.)))
 
 fish_summary <- melt(sum_df)
+fish_summary$variable <-   str_replace(fish_summary$variable, "n_distinct","ndistinct")
 
-fish_summary$mean <- tester %>% 
+fish_summary$metric <-stringr::str_extract(fish_summary$variable, "[:alnum:]*(?=[:punct:])")
+fish_summary$summary_metric<- stringr::str_extract(fish_summary$variable, "(?<=[:punct:])[:alnum:]*")
+
+fish_summary <- fish_summary %>% 
+  select(metric, summary_metric, value) %>% 
+  spread(summary_metric, value) %>% 
+  select(metric, n, mean, var, sd, IQR, ndistinct)
   
-  
+write_csv(fish_summary, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/metric_summary_stats.csv"))
+
+
+library(psych)
+fish_summary <- describe(fish)
+write.csv(fish_summary, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/metric_summary_stats.csv"))
 
 #### Loop Trial ####
 # metric_list <- fish %>%
@@ -75,6 +83,18 @@ fish_summary$mean <- tester %>%
 # 
 # dev.off()
 
+pdf(file=paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/metric_histograms.pdf"))
+
+for (col in 3:ncol(fish)) {
+  hist(fish[,col])
+  main = names(df[col])
+}
+
+dev.off()
+
+as.numeric(fish[,5])
+hist(fish[,5])
+###
 
 metric_list <- fish %>%
   select(-c(site_id, data_source)) 
