@@ -286,10 +286,10 @@ fecundity_by_total_length <- function(counts_and_traits) {
 #TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 
 ## For CREP data
-# fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
+fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
 
 ## For IDNR Basin data
-fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_Drake_1991-2007.csv"), na = "", stringsAsFactors = F)
+# fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_Drake_1991-2007.csv"), na = "", stringsAsFactors = F)
 
 
 ## For IDNR Basin Data ##
@@ -298,8 +298,8 @@ fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP
 
 #### Create unique Site_ID per sample if this has not already been created ####
 ## For CREP and IDNR Basin data
-# fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
-fish_data$Event_Date <- as.Date(fish_data$Event_Date)
+fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
+# fish_data$Event_Date <- as.Date(fish_data$Event_Date)
 fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
 #### Add fish traits ####
@@ -309,8 +309,8 @@ names(fish_data)
 id_table <- fish_data %>% 
   select(Site_ID, pugap_code, Reach_Name, Event_Date) %>% 
   unique()
-# write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
-write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_Drake_1991-2007.csv"))
+write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
+# write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_Drake_1991-2007.csv"))
 
 # Add traits to fish count data
 fish_table <- add_traits_to_data(fish_data)
@@ -557,5 +557,5 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
-# write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_final.csv"), na = "0", row.names = F)
-write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_final.csv"), na = "0", row.names = F)
+write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_final.csv"), na = "0", row.names = F)
+# write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_final.csv"), na = "0", row.names = F)
