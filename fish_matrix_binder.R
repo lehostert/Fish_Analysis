@@ -38,11 +38,19 @@ summary(pugap.source_unique)
 library(plyr)
 kasky.source_aggregate <- fish_matrix_full %>% 
   select(-c(Site_ID, Reach_Name, Event_Date)) %>% 
-  plyr::ddply(.(data_source, pugap_code),colwise(mean))
+  plyr::ddply(.(data_source, pugap_code), colwise(mean))
+
+# kasky.source_aggregate <- fish_matrix_full %>% 
+#   select(-c(Site_ID, Reach_Name, Event_Date)) %>% 
+#   group_by(data_source, pugap_code) %>% 
+#   summarize(value = mean(value)) %>% 
+#   ungroup()
 
 kasky_aggregate <- fish_matrix_full %>% 
   select(-c(Site_ID, Reach_Name, Event_Date, data_source)) %>% 
   plyr::ddply(.(pugap_code),colwise(mean))
+
+
   
 
 write_csv(fish_matrix, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_final.csv"), na = ".")
