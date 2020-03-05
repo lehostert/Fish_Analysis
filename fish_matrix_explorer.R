@@ -26,6 +26,8 @@ library(psych)
 fish_summary <- describe(fish)
 write.csv(fish_summary, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/metric_summary_stats.csv"))
 
+# TODO Make Loop for plots work
+
 #### Loop Trial ####
 # metric_list <- fish %>%
 #   select(-c(site_id, data_source)) %>%
@@ -48,83 +50,83 @@ write.csv(fish_summary, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CR
 # 
 # dev.off()
 
-pdf(file=paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/metric_histograms.pdf"))
-
-for (col in 3:ncol(fish)) {
-  hist(fish[,col])
-  main = names(fish[col])
-}
-
-dev.off()
-
-
-names(fish[,col])
-
-as.numeric(fish[,5])
-hist(fish[,5])
-###
-
-metric_list <- fish %>%
-  select(-c(site_id, data_source)) 
-  # names() %>% 
-  # list()
-
-pdf(file="metric_plots.pdf")
-
-plot_list <- list()
-
-for (i in colnames(metric_list)) {
-  plot_list[[i]] <- ggplot2::ggplot(fish, aes(x = i)) +
-    geom_histogram()
-
-   print(plot_list[[i]])
-}
-
-dev.off()
-###
-metric_list = fish %>%
-  select(-c(site_id, data_source)) %>% 
-  colnames() %>% 
-  list()
-
-plot_list = list()
-
-for (i in seq_along(metric_list)) {
-  plot_list[[i]] = ggplot2::ggplot(fish, aes(x = metric_list[[i]])) +
-    geom_histogram()
-}
-
-pdf("plots.pdf")
-for (i in metric_list) {
-  print(plot_list[[i]])
-}
-dev.off()
-
-###
-a <- ggplot2::ggplot(fish, aes(x = individuals)) +
-  geom_histogram()
-
-print(a)
-
-
-for (i in seq_along(metric_list)){
-  print(metric_list[[i]])
-}
-
-#### Example ####
-# Plot separate ggplot figures in a loop.
-library(ggplot2)
-
-# Make list of variable names to loop over.
-var_list = combn(names(iris)[1:3], 2, simplify=FALSE)
-
-# Make plots.
-plot_list = list()
-for (i in 1:3) {
-  p = ggplot(iris, aes_string(x=var_list[[i]][1], y=var_list[[i]][2])) +
-    geom_point(size=3, aes(colour=Species))
-  plot_list[[i]] = p
-}
+# pdf(file=paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/metric_histograms.pdf"))
+# 
+# for (col in 3:ncol(fish)) {
+#   hist(fish[,col])
+#   main = names(fish[col])
+# }
+# 
+# dev.off()
+# 
+# 
+# names(fish[,col])
+# 
+# as.numeric(fish[,5])
+# hist(fish[,5])
+# ###
+# 
+# metric_list <- fish %>%
+#   select(-c(site_id, data_source)) 
+#   # names() %>% 
+#   # list()
+# 
+# pdf(file="metric_plots.pdf")
+# 
+# plot_list <- list()
+# 
+# for (i in colnames(metric_list)) {
+#   plot_list[[i]] <- ggplot2::ggplot(fish, aes(x = i)) +
+#     geom_histogram()
+# 
+#    print(plot_list[[i]])
+# }
+# 
+# dev.off()
+# ###
+# metric_list = fish %>%
+#   select(-c(site_id, data_source)) %>% 
+#   colnames() %>% 
+#   list()
+# 
+# plot_list = list()
+# 
+# for (i in seq_along(metric_list)) {
+#   plot_list[[i]] = ggplot2::ggplot(fish, aes(x = metric_list[[i]])) +
+#     geom_histogram()
+# }
+# 
+# pdf("plots.pdf")
+# for (i in metric_list) {
+#   print(plot_list[[i]])
+# }
+# dev.off()
+# 
+# ###
+# a <- ggplot2::ggplot(fish, aes(x = individuals)) +
+#   geom_histogram()
+# 
+# print(a)
+# 
+# 
+# for (i in seq_along(metric_list)){
+#   print(metric_list[[i]])
+# }
+# 
+# #### Example ####
+# # Plot separate ggplot figures in a loop.
+# library(ggplot2)
+# 
+# # Make list of variable names to loop over.
+# var_list = combn(names(iris)[1:3], 2, simplify=FALSE)
+# 
+# # Make plots.
+# plot_list = list()
+# for (i in 1:3) {
+#   p = ggplot(iris, aes_string(x=var_list[[i]][1], y=var_list[[i]][2])) +
+#     geom_point(size=3, aes(colour=Species))
+#   plot_list[[i]] = p
+# }
 
 # Another option: create pdf where each page is a separate plot.
 pdf("plots.pdf")

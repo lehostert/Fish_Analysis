@@ -49,9 +49,7 @@ kasky.source_aggregate <- fish_matrix_full %>%
 kasky_aggregate <- fish_matrix_full %>% 
   select(-c(Site_ID, Reach_Name, Event_Date, data_source)) %>% 
   plyr::ddply(.(pugap_code),colwise(mean))
-
-
   
-
-write_csv(fish_matrix, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_final.csv"), na = ".")
-write_csv(fish_matrix, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_full.csv"), na = ".")
+write_csv(id_key, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_site_id_key.csv"), na = ".")
+# write_csv(fish_matrix, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_final.csv"), na = ".")
+# write_csv(fish_matrix, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_full.csv"), na = ".")
