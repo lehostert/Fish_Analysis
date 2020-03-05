@@ -13,6 +13,8 @@ id_basin <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/
 
 fish_matrix <- bind_rows("crep_monitoring" = crep, "IDNR_basin_surveys_LDrake" = basin, .id = "data_source")
 id_key <- bind_rows("crep_monitoring" = id_crep, "IDNR_basin_surveys_LDrake" = id_basin, .id = "data_source")
+id_key <- id_key %>% 
+  select(2:4,1)
 
 fish_matrix_full <- fish_matrix %>% 
   full_join(id_key, by = c("Site_ID", "data_source")) %>% 
