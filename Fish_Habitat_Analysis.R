@@ -3,8 +3,11 @@ library(randomForest)
 library(vegan)
 library(tree)
 
+network_prefix <- "//INHS-Bison"
+# network_prefix <- "/Volumes"
+
 ### Set up fish and habitat data for comparison.
-fish <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.xlsx", sheet = 1)
+fish <- readxl::read_excel(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data.xlsx"), sheet = 1)
 habitat <- readxl::read_excel("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Habitat_Characteristics.xlsx", sheet = 1)
 
 habitat$Site_ID <-paste(str_replace_all(habitat$Reach_Name, "[:blank:]", ""), str_replace_all(habitat$Event_Date,"-",""), sep = "_") 
