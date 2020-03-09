@@ -3,12 +3,18 @@ library(tree)
 library(VSURF)
 library(randomForest)
 
+network_prefix <- "//INHS-Bison"
+# network_prefix <- "/Volumes"
+
 ### This analysis is based off of the environmental variables from 
 
 ####### The metrics data set
 
-metrics_envi.dat <- read.csv("metrics_envi.csv", header = T, row.names = "Type")
-metrics_list_LEH <- read.table("~/GitHub/Stream_Ecology_Lab_Stats_workshop/Loops/metrics_list.txt", header = T, stringsAsFactors = F) %>%
+metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
+attach(metrics_envi.dat)
+metrics_list_LEH <- metrics_envi.dat   %>% 
+  select(5:74) %>% 
+  names() %>% 
   as.matrix()
 #### This file must be a matrix in order to use it in the loop
 #### try to add data to the RF command in order to get around the "attach" function
@@ -16,7 +22,7 @@ metrics_list_LEH <- read.table("~/GitHub/Stream_Ecology_Lab_Stats_workshop/Loops
 #   
 # }
 
-sink("Fish_Metrics_RF_Result_LEH.txt")
+sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.txt"))
 
 for (i in metrics_list_LEH)
   
@@ -26,10 +32,17 @@ for (i in metrics_list_LEH)
     
     Metric<-get(paste(i))
     
-    Metric.rf<-randomForest(Metric~NRSA+WSA+DRAINAGE+SLOP_PCT+ELEV_AVG+ELEV_MIN+ELEV_MAX+ELEV_RNG+ECO3_39+ECO3_45+
-                              PPTAVG_C+PPTAVG_B+T_AVG_C+T_AVG_B+T_MIN_B+T_MAX_B+C_Mnprecp+Mnprecip+WD_JAN+WD_MAR+
-                              WD_APR+WD_JUL+WD_AUG+Wetdays+ET+PET_B+FST32F_B+LST32F_B+TOPWET+RF+PERHOR+Wat_Tab+
-                              CLAYAVE+SANDAVE+KFACT_UP+NO10_AV+BDAVE+MgO_PCT+RECHARGE+Year+DoY,ntree=5000,importance=T, mtry=j)
+    Metric.rf<-randomForest(Metric~link+dlink+c_order+dorder+wt_total_sqme+
+                            wt_gdd+wt_jul_mnx+wt_prec+
+                            c_br50+c_br100+c_brg100+wt_br50+wt_br100+wt_brg100+
+                            wt_br_carbonate+wt_br_sandstone+wt_br_shale+wt_rocky+wt_alluvium_fluvial+wt_coarse_moraine+wt_coarse+wt_colluvium+wt_dune+
+                            wt_fines+wt_lacustrine+wt_loess+wt_medium_moraine+wt_outwash+wt_peat_muck+wt_icecontact+
+                            w_darcyx+wt_darcyx+w_permx+wt_permx+
+                            r_open_wet+rt_grassland+w_forest_total+w_agriculture+w_grassland+w_urban+w_open_wet+w_wetland_total+wt_forest_total+wt_urban+wt_grassland+wt_agriculture+
+                            bigriver+damdwl+damdw+damupl+damup+missi+pond+pond_area+pondwl+pondwa+ponddw+pondupl+pondupa+pondup+
+                            sinuous+w_total_sqm+w_slope+wt_slope+gradient+
+                            w_crepcrp_percent+w_hel_percent, 
+                            ntree=5000,importance=T, mtry=j)
     
     R_value<-Metric.rf$rsq[5000]
     
@@ -50,80 +63,32 @@ for (i in metrics_list_LEH)
   print(i)
 }
 
-#### Begin text from file Metrics_RF.txt
-### Changed "clipboard" to the file name in my local directory. 
-#data input
-metrics_envi.dat<-read.table("metrics_envi.csv",header=T,row.name="Site_code",sep=",")
-attach(metrics_envi.dat)
+#### Random Forest ####
+
+set.seed(2020)
 
 
-#metric_list has to be in matrix form.
-metrics_list<-read.table("metrics_list.txt",header=T)
-metrics_list<-as.matrix(metrics_list)
+fish_metric <- "sensptax"
+fish_RF <- randomForest(fish.df$sensptax~., data = habitat.df, na.action = na.omit, ntree= 5000, mtry=4, importance= T)
 
-# record the output into a file (something like dump might do the same thing)
-sink("Metrics_RF_Result.txt")
+fish_RF
+imp_fish_RF <-importance(fish_RF)
+habitat_list <- rownames(imp_fish_RF) 
 
-for (i in metrics_list)
-  
-{
-  for (j in 1:8)
-  {
-    
-    Metric<-get(paste(i))
-    
-    Metric.rf<-randomForest(Metric~NRSA+WSA+DRAINAGE+SLOP_PCT+ELEV_AVG+ELEV_MIN+ELEV_MAX+ELEV_RNG+ECO3_39+ECO3_45+PPTAVG_C+PPTAVG_B+T_AVG_C+T_AVG_B+T_MIN_B+T_MAX_B+C_Mnprecp+Mnprecip+WD_JAN+WD_MAR+WD_APR+WD_JUL+WD_AUG+Wetdays+ET+PET_B+FST32F_B+LST32F_B+TOPWET+RF+PERHOR+Wat_Tab+CLAYAVE+SANDAVE+KFACT_UP+NO10_AV+BDAVE+MgO_PCT+RECHARGE+Year+DoY,ntree=500,importance=T, mtry=j)
-    
-    R_value<-Metric.rf$rsq[500]
-    
-    A<-c(i,j,R_value)
-    
-    print (A)
-    
-  }
+imp_fish_RF <-data.frame(imp_fish_RF)
+
+# Partial Dependancy Plots looping over variable to create for all variables. 
+# Remember y-values 
+for (habitat_feature in seq_along(habitat_list)) {
+  file_out <- paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_PP_", habitat_list[habitat_feature], ".pdf")
+  pdf(file_out)
+  partialPlot(fish_RF1, habitat.df, habitat_list[habitat_feature], main = paste("Partial Dependancy Plot on", habitat_list[habitat_feature]), xlab = paste(habitat_list[habitat_feature]))
+  dev.off()
 }
-## Closes the sink
-sink()
-## Print to screen
-list()
 
-#####################################################################################
-#####################################################################################
-### Begin text from file R_code_for_plots.txt
-
-# data input
-species.dat<-read.table("species_response.csv",header=T,sep=",")
-
-# list all unique species names
-Species<-unique(species.dat$Species)
-
-# specify output-file type and name
-
-pdf(file="fish.pdf")
-
-#loop for generating multiple plots for all species
-
-for (j in Species)
-{
-  
-  # set plot arrangement for each page
-  par(mfrow=c(3,4))
-  
-  categories=NULL
-  
-  species<-subset(species.dat,Species==j)
-  
-  categories <-unique(species$Variable)
-  
-  for (i in categories)
-  {
-    plot_data <- subset(species, Variable == i)
-    plot(plot_data$X, plot_data$Y, main=c(j), xlab=c(i), ylab="log_abundance", type="l")
-  }
-}
+#PLOT YOUR FORESTS IMPORTANT VARIABLES
+pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_VariableImportance.pdf"), width = 9)
+varImpPlot(fish_RF2)
 dev.off()
 
-### categories = Null is an object that Yong defined to pull out the unique variables from the species.dat see lines 104 & 108. 
-### To explain dev.off () to turn off pdf() because this is a command that is considered a device.
-### The above will print "null device 1" when finished this is because after you run the dev.off() 
-### there are no items to print out/show in R because they have all been saved as .pdfs
+#

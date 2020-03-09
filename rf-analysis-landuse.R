@@ -39,12 +39,24 @@ id_key <- id_key %>%
 # b <- sort(b)
 # df<- data.frame(a,b)
 
-habitat <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_WATERSHED_TOTAL.csv"))
+habitat <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics.csv"))
 names(habitat) <- str_to_lower(names(habitat))
 habitat <- habitat %>% 
-  full_join(id_key, by = c("pu_gap_code"="pugap_code")) %>% 
-  drop_na() %>% 
-  select(-c(pu_gap_code, pu_code, gap_code, reach_name, event_date, data_source))
+  full_join(id_key, by = c("pu_gap_code"="pugap_code")) 
+# drop_na() 
+# select(-c(pu_gap_code, pu_code, gap_code, reach_name, event_date, data_source))
+
+fab_hab <- habitat %>% 
+  full_join(fm, by = "site_id") %>% 
+  drop_na(event_date) 
+
+fab_hab<- fab_hab%>% 
+  replace_na(list(w_hel_percent = 0))
+
+fab_hab <- fab_hab %>% 
+  select(69, 1, 70, 71,72, 73:142, 2:68)
+
+write_csv(fab_hab, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"))
 
 habitat.df <- data.frame(habitat, row.names = 'site_id')
 fish.df <- data.frame(fm, row.names = 'site_id')
