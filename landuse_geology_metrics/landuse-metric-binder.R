@@ -8,31 +8,60 @@ W <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/
 RT <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_RIPARIAN_TOTAL.csv"))
 R <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_RIPARIAN.csv"))
 C <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_CHANNEL.csv"))
-k <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PU_Gaps_size_and_CRP_classes.csv"))
+# k <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PU_Gaps_size_and_CRP_classes.csv"))
 hel <- read_csv(file = "~/ArcGIS/Projects/CREP/HEL_Soils_KaskLocalCatchment.csv")
-kasky <- read_csv(file = "~/ArcGIS/Projects/CREP/KaskLocalCatchments_w_Area.csv")
+kasky_Area <- read_csv(file = "~/ArcGIS/Projects/CREP/KaskLocalCatchments_w_Area.csv")
+CRP <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Kasky_CRP_Area.csv"))
+CREP <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Kasky_CREP_Area.csv"))
 
 
 #bring together all of the metrics from the different layers so that they match the Can Journal of Aq Sci then loop it like the Loop demo
 
-k <- k %>% select(c(pu_gap_code, basin, prop_local_CRP)) %>% distinct()
-
-kasky <- kasky %>% 
-  select(PUGAP_CODE, CRP_Area, CREP_Area, Total_Area, Area_Km2)
-kasky$CRPCREP_Area <- kasky$CREP_Area + kasky$CRP_Area
-kasky$W_CREPCRP_Percent <- kasky$CRPCREP_Area/kasky$Total_Area
+# k <- k %>% select(c(pu_gap_code, basin, prop_local_CRP)) %>% distinct()
 
 hel <- hel %>%
   select(PUGAP_CODE, Erodibility_Area)
 
-kasky <- full_join(kasky, hel)
-kasky$W_HEL_Percent <- kasky$Erodibility_Area/kasky$Area_Km2
+CRP_k <- CRP %>% 
+  filter(str_detect(CRP$PUGAP_CODE, "kasky")) %>% 
+  select(PUGAP_CODE, CRP_Area)
 
-kasky_clean <- kasky %>% 
-  filter(str_detect(kasky$PUGAP_CODE, "kasky")) %>% 
+CREP_k <- CREP %>% 
+  filter(str_detect(CREP$PUGAP_CODE, "kasky")) %>% 
+  select(PUGAP_CODE, CREP_Area)
+
+CREP_CRP <- CRP_k %>% 
+  full_join(CREP_k) %>% 
+  replace_na(list(CREP_Area = 0, CRP_Area = 0)) %>%
+  mutate(CREP_CRP_sum = rowSums(.[2:3]))
+
+kasky <- kasky_Area %>% 
+  filter(str_detect(kasky_Area$PUGAP_CODE, "kasky")) %>% 
+  select(PUGAP_CODE,Total_Area, Area_Km2)%>% 
   group_by(PUGAP_CODE) %>% 
   summarise_all(sum) %>% 
-  select(PUGAP_CODE, W_CREPCRP_Percent, W_HEL_Percent) 
+  ungroup() %>% 
+  full_join(CREP_CRP) %>% 
+  replace_na(list(CREP_Area = 0, CRP_Area = 0, CREP_CRP_sum = 0))
+
+kasky <- kasky %>% 
+  full_join(hel) %>% 
+  filter(str_detect(PUGAP_CODE, "kasky")) %>% 
+  replace_na(list(Erodibility_Area = 0))
+
+kasky <- mutate(kasky, W_CREPCRP_Percent = CREP_CRP_sum/Area_Km2)
+kasky <- mutate(kasky, W_HEL_Percent = Erodibility_Area/Area_Km2)
+
+# kasky_clean <- kasky %>% 
+#   filter(str_detect(kasky$PUGAP_CODE, "kasky")) %>% 
+#   group_by(PUGAP_CODE) %>% 
+#   summarise_all(sum) %>% 
+#   select(PUGAP_CODE, W_CREPCRP_Percent, W_HEL_Percent) %>% 
+#   replace_na(list(W_CREPCRP_Percent = 0, W_HEL_Percent = 0))
+
+kasky_clean <- kasky %>%
+  select(PUGAP_CODE, W_CREPCRP_Percent, W_HEL_Percent)
+
 
 a1 <- full_join(WT,W)
 a2 <- full_join(R,RT)
@@ -154,4 +183,4 @@ envi <- all %>%
 # envi$CRP <- k$prop_local_CRP
 
 
-write_csv(envi, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics.csv"))
+write_csv(envi, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics_revised.csv"))
