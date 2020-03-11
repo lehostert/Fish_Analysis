@@ -9,15 +9,19 @@ network_prefix <- "//INHS-Bison"
 #### Random Forest ####
 
 
-# metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
+metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
+metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.xlsx"), sheet = 2)
+metrics_list <- metrics_list %>% as.matrix() 
 
+# rural_metrics_envi.dat <- metrics_envi.dat %>% 
+#   filter(w_urban <0.02)
 
 # set.seed(2020)
 # TODO make this a loop able to take in a table of metrics and determined mtry no.
 
-fish_metric <- "leucptax"
-var_mtry <- 3
-fish_RF <- randomForest(metrics_envi.dat$leucptax~link+dlink+c_order+dorder+wt_total_sqme+
+fish_metric <- catontax
+var_mtry <- 2
+fish_RF <- randomForest(metrics_envi.dat$catontax~link+dlink+c_order+dorder+wt_total_sqme+
                           wt_gdd+wt_jul_mnx+wt_prec+
                           c_br50+c_br100+c_brg100+wt_br50+wt_br100+wt_brg100+
                           wt_br_carbonate+wt_br_sandstone+wt_br_shale+wt_rocky+wt_alluvium_fluvial+wt_coarse_moraine+wt_coarse+wt_colluvium+wt_dune+
@@ -30,6 +34,7 @@ fish_RF <- randomForest(metrics_envi.dat$leucptax~link+dlink+c_order+dorder+wt_t
                         data = metrics_envi.dat, na.action = na.omit, ntree= 5000, mtry= var_mtry, importance= T)
 
 fish_RF
+R_value<-fish_RF$rsq[5000]
 imp_fish_RF <-importance(fish_RF)
 habitat_list <- rownames(imp_fish_RF) 
 
@@ -50,7 +55,14 @@ varImpPlot(fish_RF)
 dev.off()
 
 imp_fish_RF <- tibble::rownames_to_column(imp_fish_RF , "landscape_metric")
-imp_fish_RF <- imp_fish_RF %>% rename( =, )
+
+first_var <- paste0(fish_metric,".IncMSE = X.IncMSE")
+imp_fish_RF <- rename(imp_fish_RF, first_var)
+# imp_fish_RF <- imp_fish_RF %>% rename(paste0(fish_metric,".IncNodePurity") = IncNodePurity)
+
+
+imp_fish_RF <- imp_fish_RF %>% rename(X.IncMSE = catontax.IncMSE)
+imp_fish_RF <- imp_fish_RF %>% rename(catontax.IncNodePurity = IncNodePurity)
 
 write.csv(imp_fish_RF, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry/fish_RF_VarImportance_",fish_metric, ".csv"), row.names = T)
 
