@@ -57,9 +57,9 @@ fab_hab <- fab_hab %>%
   select(69, 1, 70, 71,72, 73:142, 2:68)
 
 write_csv(fab_hab, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"))
-
-habitat.df <- data.frame(habitat, row.names = 'site_id')
-fish.df <- data.frame(fm, row.names = 'site_id')
+# 
+# habitat.df <- data.frame(habitat, row.names = 'site_id')
+# fish.df <- data.frame(fm, row.names = 'site_id')
 
 #### Random Forest ####
 
