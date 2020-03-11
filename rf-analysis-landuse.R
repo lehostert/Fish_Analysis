@@ -39,7 +39,7 @@ id_key <- id_key %>%
 # b <- sort(b)
 # df<- data.frame(a,b)
 
-habitat <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics.csv"))
+habitat <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics_revised.csv"))
 names(habitat) <- str_to_lower(names(habitat))
 habitat <- habitat %>% 
   full_join(id_key, by = c("pu_gap_code"="pugap_code")) 
