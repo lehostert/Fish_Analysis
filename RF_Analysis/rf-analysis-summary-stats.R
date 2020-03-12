@@ -115,7 +115,7 @@ ggplot2::ggplot(crep, aes(x = factor(lubridate::year(event_date)), y = rich_link
   geom_jitter(aes(color = w_hel_percent))+
   scale_color_viridis(option = "D") +
   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
-  labs(title=paste0("Adjusted Richness by Year= jittered"))
+  labs(title=paste0("Adjusted Richness by Year- jittered"), x = "Sampling Year", y = "Adjusted Richness")
 
 #richness by link Violin with jitter
 ggplot2::ggplot(crep, aes(x = factor(lubridate::year(event_date)), y = richness)) +
@@ -123,6 +123,6 @@ ggplot2::ggplot(crep, aes(x = factor(lubridate::year(event_date)), y = richness)
   geom_jitter(aes(color = w_hel_percent))+
   scale_color_viridis(option = "B") +
   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
-  labs(title=paste0("Richness by Year- Jittered"))
+  labs(title=paste0("Richness by Year- Jittered"), x = "Sampling Year", y = "Richness")
 
 dev.off()

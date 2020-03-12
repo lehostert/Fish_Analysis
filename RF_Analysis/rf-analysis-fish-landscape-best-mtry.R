@@ -11,6 +11,7 @@ network_prefix <- "//INHS-Bison"
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
 metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.xlsx"), sheet = 2)
 metrics_list <- metrics_list %>% as.matrix() 
+attach(metrics_envi.dat)
 
 # rural_metrics_envi.dat <- metrics_envi.dat %>% 
 #   filter(w_urban <0.02)
@@ -19,14 +20,12 @@ metrics_list <- metrics_list %>% as.matrix()
 # TODO make this a loop able to take in a table of metrics and determined mtry no.
 # TODO change the names of the importance value DF that results so that you can dsitinguish each metric %incMSE from other metric %incMSE.
 
-# sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_best_mtry_Result_20200311.csv"))
-
 set.seed(2020)
-for (i in metrics_list[,1])
+for (i in 1:nrow(metrics_list))
 {
     j <- metrics_list[i,2]  
   
-    metric <- get(paste(i))
+    metric <- get(paste(metrics_list[i,1]))
     
     metric.rf <- randomForest(metric~link+dlink+c_order+dorder+wt_total_sqme+
                               wt_gdd+wt_jul_mnx+wt_prec+
@@ -38,7 +37,7 @@ for (i in metrics_list[,1])
                               bigriver+damdwl+damdw+damupl+damup+missi+pond+pond_area+pondwl+pondwa+ponddw+pondupl+pondupa+pondup+
                               sinuous+w_total_sqm+w_slope+wt_slope+gradient+
                               w_crepcrp_percent+w_hel_percent, 
-                            ntree=5000,importance=T, mtry=j)
+                              data = metrics_envi.dat, na.action = na.omit, ntree=5000,importance=T, mtry=j)
     
     pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_",metric, ".pdf"), width = 9)
     varImpPlot(metric.rf)
@@ -48,13 +47,11 @@ for (i in metrics_list[,1])
     imp_fish_RF <-data.frame(imp_fish_RF)
     imp_fish_RF <- tibble::rownames_to_column(imp_fish_RF , "landscape_metric")
     imp_fish_RF$fish_metric <- metric
+    imp_fish_RF$mtry <- j
     
     write.csv(imp_metric_rf, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_",metric, ".csv"), row.names = T)
 }
 
-# sink()
- 
-# list()
 
 ##### Manual RF ####
 
