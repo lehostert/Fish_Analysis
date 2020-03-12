@@ -1,4 +1,5 @@
 library(tidyverse)
+library(viridis)
 
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
@@ -70,14 +71,58 @@ ggplot2::ggplot(fish_envi.dat, aes(x = wt_agriculture)) +
 
 #W_crepcrp_percent
 ggplot2::ggplot(fish_envi.dat, aes(x = w_crepcrp_percent)) +
-  geom_histogram() +
+  geom_histogram(binwidth = 0.05) +
   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
   labs(title=paste0("W_CREP_percent"), y = "Count")
 
 #W_hel_percent
 ggplot2::ggplot(fish_envi.dat, aes(x = w_hel_percent)) +
-  geom_histogram() +
+  geom_histogram(binwidth = 0.05) +
   theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
   labs(title=paste0("W_hel_percent"), y = "Count")
 
 dev.off() 
+
+#### Fish Abundance Metrics ####
+fish_envi.dat <- metrics_envi.dat
+fdf <- fish_envi.dat
+fdf <- tibble::rownames_to_column(fdf, "Site_ID")
+
+fdf$event_date <- as.Date(fdf$event_date)
+fdf <- fdf %>% 
+  mutate(rich_link = richness/link)
+
+pdf(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Plots/summary-plots.pdf"))
+
+#richness
+ggplot2::ggplot(fdf, aes(x = event_date, y = richness)) +
+  geom_point()+
+  theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+  labs(title=paste0("Spp. Richness"))
+
+#richness adjusted for by link
+ggplot2::ggplot(fdf, aes(x = event_date, y = rich_link)) +
+  geom_point()+
+  theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+  labs(title=paste0("Richness adj by link"))
+
+crep <- fdf %>% 
+  filter(data_source == "crep_monitoring")
+
+#richness adjusted for by link Violin with jitter
+ggplot2::ggplot(crep, aes(x = factor(lubridate::year(event_date)), y = rich_link)) +
+  geom_violin() +
+  geom_jitter(aes(color = w_hel_percent))+
+  scale_color_viridis(option = "D") +
+  theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+  labs(title=paste0("Adjusted Richness by Year= jittered"))
+
+#richness by link Violin with jitter
+ggplot2::ggplot(crep, aes(x = factor(lubridate::year(event_date)), y = richness)) +
+  geom_violin() +
+  geom_jitter(aes(color = w_hel_percent))+
+  scale_color_viridis(option = "B") +
+  theme(legend.position="top",plot.title = element_text(hjust=0.5) ,text = element_text(size=18, hjust=0.5)) +
+  labs(title=paste0("Richness by Year- Jittered"))
+
+dev.off()
