@@ -19,8 +19,9 @@ metrics_list <- metrics_list %>% as.matrix()
 # TODO make this a loop able to take in a table of metrics and determined mtry no.
 # TODO change the names of the importance value DF that results so that you can dsitinguish each metric %incMSE from other metric %incMSE.
 
-sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_best_mtry_Result_20200311.csv"))
+# sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_best_mtry_Result_20200311.csv"))
 
+set.seed(2020)
 for (i in metrics_list[,1])
 {
     j <- metrics_list[i,2]  
@@ -39,10 +40,6 @@ for (i in metrics_list[,1])
                               w_crepcrp_percent+w_hel_percent, 
                             ntree=5000,importance=T, mtry=j)
     
-    # R_value<-Metric.rf$rsq[5000]
-    
-    # A<-c(i,j,R_value)
-    
     pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_",metric, ".pdf"), width = 9)
     varImpPlot(metric.rf)
     dev.off()
@@ -50,24 +47,19 @@ for (i in metrics_list[,1])
     imp_metric_rf <-importance(metric.rf)
     imp_fish_RF <-data.frame(imp_fish_RF)
     imp_fish_RF <- tibble::rownames_to_column(imp_fish_RF , "landscape_metric")
+    imp_fish_RF$fish_metric <- metric
     
-    #### TODO rename the tibble columns 
-    #### TODO spread () to long so that you can bind them all together
-    
-    
-    write.csv(imp_metric_rf, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry/fish_RF_VarImportance_",metric, ".csv"), row.names = T)
-    
-    print (A)
+    write.csv(imp_metric_rf, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_",metric, ".csv"), row.names = T)
 }
 
-sink()
-
-list()
+# sink()
+ 
+# list()
 
 ##### Manual RF ####
 
 
-fish_metric <- catontax
+fish_metric <- "catontax"
 var_mtry <- 2
 fish_RF <- randomForest(metrics_envi.dat$catontax~link+dlink+c_order+dorder+wt_total_sqme+
                           wt_gdd+wt_jul_mnx+wt_prec+
@@ -89,7 +81,7 @@ imp_fish_RF <-importance(fish_RF)
 
 imp_fish_RF <-data.frame(imp_fish_RF)
 imp_fish_RF <- tibble::rownames_to_column(imp_fish_RF , "landscape_metric")
-
+imp_fish_RF$fish_metric <- fish_metric
 # Partial Dependancy Plots looping over variable to create for all variables. 
 # Remember y-values 
 # for (habitat_feature in seq_along(habitat_list)) {
@@ -104,15 +96,6 @@ pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Out
 varImpPlot(fish_RF)
 dev.off()
 
-imp_fish_RF <- tibble::rownames_to_column(imp_fish_RF , "landscape_metric")
-
-first_var <- paste0(fish_metric,".IncMSE = X.IncMSE")
-imp_fish_RF <- rename(imp_fish_RF, first_var)
-# imp_fish_RF <- imp_fish_RF %>% rename(paste0(fish_metric,".IncNodePurity") = IncNodePurity)
-
-
-imp_fish_RF <- imp_fish_RF %>% rename(X.IncMSE = catontax.IncMSE)
-imp_fish_RF <- imp_fish_RF %>% rename(catontax.IncNodePurity = IncNodePurity)
 
 write.csv(imp_fish_RF, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry/fish_RF_VarImportance_",fish_metric, ".csv"), row.names = T)
 
