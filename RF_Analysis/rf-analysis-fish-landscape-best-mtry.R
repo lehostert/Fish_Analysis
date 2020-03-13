@@ -6,6 +6,8 @@ library(randomForest)
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
+analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo"
+
 #### Random Forest ####
 
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
@@ -96,23 +98,29 @@ for (i in 1:nrow(metrics_list))
 # dev.off()
 
 
-write.csv(imp_fish_RF, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry/fish_RF_VarImportance_",fish_metric, ".csv"), row.names = T)
+# write.csv(imp_fish_RF, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry/fish_RF_VarImportance_",fish_metric, ".csv"), row.names = T)
 
 ######### Read  all CSV ##########
+library(tidyverse)
 
-rf_filenames <- list.files(path="//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo", pattern= "*.csv")
+rf_filenames <- list.files(path= "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo", pattern= "*.csv")
 rf_fullpath = file.path("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo", rf_filenames)
 rf_fulldataset <- do.call("rbind",lapply(rf_fullpath, FUN = function(files){read.csv(files, stringsAsFactors = FALSE, na.strings = ".")}))
-write.csv(rf_fulldataset, file= paste0("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_landscape_bestmtry_RF_VarImportance_20200313.csv"), na= "", row.names = F)
+rf_fulldataset <- rf_fulldataset %>% 
+  select(-c(X))
+write.csv(rf_fulldataset, file= paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_landscape_bestmtry_RF_VarImportance_20200313.csv"), na= "", row.names = F)
 
-# algntax <- read_csv(file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_algntax.csv") %>%
-#   rename(hab_metric = 1)
-# algptax <- read_csv(file = "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_algptax.csv") %>%
-#   rename(hab_metric = 1)
-# 
-# combined <- algntax %>% full_join(algptax, by = "hab_metric")
+rf_fulldataset$landscape_metric <- as.factor(rf_fulldataset$landscape_metric)
+rf_fulldataset$fish_metric<- as.factor(rf_fulldataset$fish_metric)
 
+rf_top <- rf_fulldataset %>% 
+  arrange(desc(X.IncMSE)) %>% 
+  group_by(fish_metric) %>% 
+  slice(1:10) %>% 
+  ungroup()
 
-
-# tbl <- sapply(rf_filenames, read_csv, simplify=FALSE) %>% 
-#   bind_rows(.id = "id")
+top_preditors_ranked <- rf_top %>% 
+  group_by(landscape_metric) %>% 
+  summarize(count = n()) %>% 
+  ungroup() %>% 
+  arrange(count)
