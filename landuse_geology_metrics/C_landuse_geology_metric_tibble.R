@@ -73,10 +73,11 @@ Gap_group_C$C_Outwash_icecontact <- Gap_group_C$C_QG1P + Gap_group_C$C_QG2P
 Gap_group_C$C_Peat_muck <- Gap_group_C$C_QG18P + Gap_group_C$C_QG31P
 Gap_group_C$C_Rocky <- Gap_group_C$C_QG11P + Gap_group_C$C_QG14P + Gap_group_C$C_QG22P + Gap_group_C$C_QG99P
 # Regroup Bed Rock Depth
-Gap_group_C$C_BD50 <- Gap_group_C$C_BD201P
-Gap_group_C$C_BD100 <- Gap_group_C$C_BD202P
-Gap_group_C$C_BD200 <- Gap_group_C$C_BD203P
-Gap_group_C$C_BD400 <- Gap_group_C$C_BD204P
+Gap_group_C$C_BR50 <- Gap_group_C$C_BD201P
+Gap_group_C$C_BR100 <- Gap_group_C$C_BD202P
+Gap_group_C$C_BR200 <- Gap_group_C$C_BD203P
+Gap_group_C$C_BR400 <- Gap_group_C$C_BD204P
+Gap_group_C$C_BRG100 <- Gap_group_C$C_BD203P + Gap_group_C$C_BD204P + Gap_group_C$C_BD205P + Gap_group_C$C_BD206P + Gap_group_C$C_BD207P + Gap_group_C$C_BD208P
 # Regroup Bed Rock Type
 Gap_group_C$C_BR_sandstone <- Gap_group_C$C_BR1P
 Gap_group_C$C_BR_shale <- Gap_group_C$C_BR2P
@@ -91,7 +92,7 @@ Gap_group_C <- Gap_group_C %>%
   select(PU_Gap_Code, PU_Code, Gap_Code,
          C_TOTAL_SQM, C_LENGTH, C_LONG, C_LAT, C_ORDER, LINK, DORDER, DLINK, SINUOUS, GRADIENT, GRADIENT_KM, DLENGTH,
          C_BR_sandstone, C_BR_shale, C_BR_carbonate, C_BR_metamorphic, C_BR_igneous, C_BR_unknown, C_BR_water,
-         C_BD50, C_BD100, C_BD200, C_BD400,
+         C_BR50, C_BR100, C_BR200, C_BR400, C_BRG100,
          C_Urban, C_Agriculture, C_Grassland, C_Forest_total, C_Forested_upland, C_Forested_wetland, C_Inland_water, C_Open_wet, C_Wetland_total, C_Barren,
          C_Alluvium_fluvial, C_Attenuated_drift, C_Bedrock, C_Broken_rocky, C_Coarse, C_Coarse_moraine, C_Colluvium, C_Dune, C_Fine_moraine, C_Fines,
          C_Icecontact, C_Lacustrine, C_Loess, C_Medium, C_Medium_moraine, C_Outwash, C_Outwash_icecontact, C_Peat_muck, C_Rocky,
