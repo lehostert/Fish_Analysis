@@ -6,6 +6,8 @@ library(tree)
 library(randomForest)
 library(randomForestExplainer)
 
+## This script bring together the fish metrics and landscape geology metrics to make one matrix. 
+
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 

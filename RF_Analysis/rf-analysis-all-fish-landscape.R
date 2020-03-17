@@ -6,9 +6,7 @@ library(randomForest)
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
-### This analysis is based off of the environmental variables from 
-
-####### The metrics data set
+####### The metrics data set is a combined matrix of all fish metrics and all landscape metrics. 
 
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
 attach(metrics_envi.dat)
@@ -16,13 +14,14 @@ metrics_list_LEH <- metrics_envi.dat   %>%
   select(5:74) %>% 
   names() %>% 
   as.matrix()
-#### This file must be a matrix in order to use it in the loop
+
+#### The metrics list file must be a matrix in order to use it in the loop in this way
 #### try to add data to the RF command in order to get around the "attach" function
 # for (variable in vector) {
 #   
 # }
 
-sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.txt"))
+sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200317.txt"))
 
 for (i in metrics_list_LEH)
   
