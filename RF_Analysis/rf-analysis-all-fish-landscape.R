@@ -62,40 +62,18 @@ for (i in metrics_list_LEH)
   print(i)
 }
 
-#### Find best mtry ####
+#### Find best mtry per metric####
 rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.txt"),
                         quote = "\"", col.names = c("x","metric", "mtry", "rsq"))
 
+rf_bestmtry <- rf_result %>% 
+  select(-c(x)) %>% 
+  group_by(metric) %>% 
+  arrange(mtry, .by_group = TRUE) %>% 
+  mutate(
+    diff = round(lead(rsq)-rsq, 4)
+  ) %>% 
+  filter(diff <= 0.01) %>% 
+  summarize(min(mtry)) %>% 
+  ungroup()
 
-
-
-#### Below if unneeded Delete ####
-#### Random Forest ####
-
-set.seed(2020)
-
-
-fish_metric <- "sensptax"
-fish_RF <- randomForest(fish.df$sensptax~., data = habitat.df, na.action = na.omit, ntree= 5000, mtry=4, importance= T)
-
-fish_RF
-imp_fish_RF <-importance(fish_RF)
-habitat_list <- rownames(imp_fish_RF) 
-
-imp_fish_RF <-data.frame(imp_fish_RF)
-
-# Partial Dependancy Plots looping over variable to create for all variables. 
-# Remember y-values 
-for (habitat_feature in seq_along(habitat_list)) {
-  file_out <- paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_PP_", habitat_list[habitat_feature], ".pdf")
-  pdf(file_out)
-  partialPlot(fish_RF1, habitat.df, habitat_list[habitat_feature], main = paste("Partial Dependancy Plot on", habitat_list[habitat_feature]), xlab = paste(habitat_list[habitat_feature]))
-  dev.off()
-}
-
-#PLOT YOUR FORESTS IMPORTANT VARIABLES
-pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_VariableImportance.pdf"), width = 9)
-varImpPlot(fish_RF2)
-dev.off()
-
-#
