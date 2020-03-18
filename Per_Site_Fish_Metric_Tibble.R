@@ -393,10 +393,10 @@ site_metric_tibble$SENSPTAX <- round(site_metric_tibble$SENSNTAX/site_metric_tib
 site_metric_tibble$SENSNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'INTOLERANT')
 site_metric_tibble$SENSPIND <- round(site_metric_tibble$SENSNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$INTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'MODERATE')
-site_metric_tibble$INTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'MODERATE')
-site_metric_tibble$INTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+site_metric_tibble$MODTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'MODERATE')
+site_metric_tibble$MODTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$MODTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'MODERATE')
+site_metric_tibble$MODTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$DOTOLTAX <- average_by_trait(fish_table, Dissolved_Oxygen)
 site_metric_tibble$DOTOLIND <- weighted_average_by_trait(fish_table, Dissolved_Oxygen)
