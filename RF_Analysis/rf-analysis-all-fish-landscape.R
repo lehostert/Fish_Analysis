@@ -62,6 +62,14 @@ for (i in metrics_list_LEH)
   print(i)
 }
 
+#### Find best mtry ####
+rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.txt"),
+                        quote = "\"", col.names = c("x","metric", "mtry", "rsq"))
+
+
+
+
+#### Below if unneeded Delete ####
 #### Random Forest ####
 
 set.seed(2020)
