@@ -8,12 +8,12 @@ network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
 ## Analysis folder is the fold for saving _this_ particular run
-analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo"
+analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/RF_fish_landscape_best_mtry"
 
 #### Random Forest using best mtry ####
 
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
-metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.xlsx"), sheet = 2)
+# metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.xlsx"), sheet = 2)
 metrics_list <- metrics_list %>% as.matrix() 
 attach(metrics_envi.dat)
 
@@ -43,7 +43,7 @@ for (i in 1:nrow(metrics_list))
                               w_crepcrp_percent+w_hel_percent, 
                               data = metrics_envi.dat, na.action = na.omit, ntree=5000,importance=T, mtry=j)
     
-    pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_",metric_name, ".pdf"), width = 9)
+    pdf(paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".pdf"), width = 9)
     varImpPlot(fish.rf)
     dev.off()
     
@@ -53,22 +53,22 @@ for (i in 1:nrow(metrics_list))
     imp_fish_rf$fish_metric <- paste(metrics_list[i,1])
     imp_fish_rf$mtry <- j
     
-    write.csv(imp_fish_rf, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_RF_VarImportance_",metric_name, ".csv"), row.names = T)
+    write.csv(imp_fish_rf, paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".csv"), row.names = T)
 }
 
 
 ######### Create best mtry .CSV files ##########
 library(tidyverse)
 
-rf_filenames <- list.files(path= "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo", pattern= "*.csv")
+rf_filenames <- list.files(path= "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/RF_fish_landscape_best_mtry", pattern= "*.csv")
 rf_fullpath = file.path("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo", rf_filenames)
 rf_fulldataset <- do.call("rbind",lapply(rf_fullpath, FUN = function(files){read.csv(files, stringsAsFactors = FALSE, na.strings = ".")}))
 rf_fulldataset <- rf_fulldataset %>% 
   select(-c(X))
-write.csv(rf_fulldataset, file= paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_landscape_bestmtry_RF_VarImportance_20200313.csv"), na= "", row.names = F)
+write.csv(rf_fulldataset, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200318.csv"), na= "", row.names = F)
 
 
-rf_fulldataset <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo/fish_landscape_bestmtry_RF_VarImportance_20200313.csv") )
+rf_fulldataset <- read_csv(file = paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200318.csv") )
 rf_fulldataset$landscape_metric <- as.factor(rf_fulldataset$landscape_metric)
 rf_fulldataset$fish_metric<- as.factor(rf_fulldataset$fish_metric)
 
@@ -88,7 +88,8 @@ predictor_ranks <- rf_fulldataset %>%
   select(landscape_metric) %>% 
   unique() %>% 
   full_join(top_preditors_ranked) %>% 
-  replace_na(list(count = 0))
+  replace_na(list(count = 0)) %>% 
+  arrange(desc(count))
   
 #### Create functions for RF summaries ####
 library(docstring)
@@ -114,3 +115,19 @@ top_ten_predictors <- function(rf_dataset, response_metric) {
 }
 
 rf_top_func <- top_ten_predictors(rf_fulldataset, fish_metric)
+
+
+#### Plot Important Variables ####
+
+##Partial Dependancy Plots looping over variable to create for all variables. Remember y-values
+for (habitat_feature in seq_along(habitat_list)) {
+  file_out <- paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_PP_", habitat_list[habitat_feature], ".pdf")
+  pdf(file_out)
+  partialPlot(fish_RF1, habitat.df, habitat_list[habitat_feature], main = paste("Partial Dependancy Plot on", habitat_list[habitat_feature]), xlab = paste(habitat_list[habitat_feature]))
+  dev.off()
+}
+
+#PLOT YOUR FORESTS IMPORTANT VARIABLES
+pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_VariableImportance.pdf"), width = 9)
+varImpPlot(fish_RF2)
+dev.off()

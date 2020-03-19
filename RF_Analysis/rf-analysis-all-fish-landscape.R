@@ -74,6 +74,7 @@ rf_bestmtry <- rf_result %>%
     diff = round(lead(rsq)-rsq, 4)
   ) %>% 
   filter(diff <= 0.01) %>% 
-  summarize(min(mtry)) %>% 
+  summarize(mtry = min(mtry)) %>% 
   ungroup()
 
+metrics_list <- rf_bestmtry
