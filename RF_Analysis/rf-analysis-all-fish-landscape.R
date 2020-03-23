@@ -9,8 +9,13 @@ network_prefix <- "//INHS-Bison"
 ####### The metrics data set is a combined matrix of all fish metrics and all landscape metrics. 
 
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
-attach(metrics_envi.dat)
-metrics_list_LEH <- metrics_envi.dat   %>% 
+
+rural_metrics_envi.dat <- metrics_envi.dat %>%
+  filter(w_urban < 0.02)
+
+attach(rural_metrics_envi.dat)
+
+response_metrics <- metrics_envi.dat   %>% 
   select(5:74) %>% 
   names() %>% 
   as.matrix()
@@ -23,7 +28,7 @@ metrics_list_LEH <- metrics_envi.dat   %>%
 
 sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200317.txt"))
 
-for (i in metrics_list_LEH)
+for (i in response_metrics)
   
 {
   for (j in 1:8)
@@ -57,7 +62,7 @@ sink()
 list()
 
 
-for (i in metrics_list_LEH)
+for (i in response_metrics)
 {
   print(i)
 }
