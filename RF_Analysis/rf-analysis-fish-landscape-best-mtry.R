@@ -8,21 +8,28 @@ network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
 ## Analysis folder is the fold for saving _this_ particular run
-analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/RF_fish_landscape_best_mtry"
+analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo3"
 
 #### Random Forest using best mtry ####
 
 # Load in one file with all of your sample ID, response variables, predictor variables in one df
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
 # metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.xlsx"), sheet = 2)
+metrics_list <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311_bestmtry.csv"))
 metrics_list <- metrics_list %>% as.matrix() 
-# attach(metrics_envi.dat)
+
+## If you do not attach your data the "get()" function will not work in the loop as written below. 
+## get() actually grabs the value of a named object so it grabs all of the values associated with whatever is your i-th metric in the metric list
+## can can specify the environment in get() but it seems like attaching is easier.
+attach(metrics_envi.dat)
 
 # rural_metrics_envi.dat <- metrics_envi.dat %>% 
 #   filter(w_urban <0.02)
 
 ## Setting the seed before the rf allows you to get the same randomness every time. 
 set.seed(2020)
+
+resultslist = list()
 
 for (i in 1:nrow(metrics_list))
 {
@@ -45,7 +52,7 @@ for (i in 1:nrow(metrics_list))
                               data = metrics_envi.dat, na.action = na.omit, ntree=5000,importance=T, mtry=j)
     
     pdf(paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".pdf"), width = 9)
-    varImpPlot(fish.rf)
+    varImpPlot(fish.rf)  
     dev.off()
     
     imp_fish_rf <- importance(fish.rf)
@@ -54,26 +61,27 @@ for (i in 1:nrow(metrics_list))
     imp_fish_rf$fish_metric <- paste(metrics_list[i,1])
     imp_fish_rf$mtry <- j
     
-    write.csv(imp_fish_rf, paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".csv"), row.names = T)
+    resultslist[[i]] <- imp_fish_rf
+    # write.csv(imp_fish_rf, paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".csv"), row.names = T)
 }
+
+
+
+rf_result <- do.call(rbind, resultslist)
+write.csv(rf_result, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200403.csv"), na= "", row.names = F)
+
+# if you attach it is good principle to detach
+detach(metrics_envi.dat)
+
 #TODO can you append each of the .csvs above to each other in a loop in order to avoid the step below that combines them all anyway?
 
 ######### Create best mtry .CSV files ##########
 library(tidyverse)
 
-rf_filenames <- list.files(path= "//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/RF_fish_landscape_best_mtry", pattern= "*.csv")
-rf_fullpath = file.path("//INHS-Bison/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo", rf_filenames)
-rf_fulldataset <- do.call("rbind",lapply(rf_fullpath, FUN = function(files){read.csv(files, stringsAsFactors = FALSE, na.strings = ".")}))
-rf_fulldataset <- rf_fulldataset %>% 
-  select(-c(X))
-write.csv(rf_fulldataset, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200318.csv"), na= "", row.names = F)
+rf_result$landscape_metric <- as.factor(rf_result$landscape_metric)
+rf_result$fish_metric<- as.factor(rf_result$fish_metric)
 
-
-rf_fulldataset <- read_csv(file = paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200318.csv") )
-rf_fulldataset$landscape_metric <- as.factor(rf_fulldataset$landscape_metric)
-rf_fulldataset$fish_metric<- as.factor(rf_fulldataset$fish_metric)
-
-rf_top <- rf_fulldataset %>% 
+rf_top <- rf_result %>% 
   arrange(desc(X.IncMSE)) %>% 
   group_by(fish_metric) %>% 
   slice(1:10) %>% 
@@ -85,7 +93,7 @@ top_preditors_ranked <- rf_top %>%
   ungroup() %>% 
   arrange(desc(count))
 
-predictor_ranks <- rf_fulldataset %>% 
+predictor_ranks <- rf_result %>% 
   select(landscape_metric) %>% 
   unique() %>% 
   full_join(top_preditors_ranked) %>% 
@@ -107,15 +115,56 @@ top_ten_predictors <- function(rf_dataset, response_metric) {
   #' @param response_metric this is the response variable used on the left side of the ~ in the RF. We will group by this parameter to get 
   #' the top ten predictors per this metric. 
   
+  response_metric <- enquo(response_metric)
+  
   rf_top <- rf_dataset %>% 
     arrange(desc(X.IncMSE)) %>% 
-    group_by(response_metric) %>% 
+    group_by(!! response_metric) %>% 
     slice(1:10) %>% 
     ungroup()
  
 }
 
-rf_top_func <- top_ten_predictors(rf_fulldataset, fish_metric)
+rank_predictors <- function(rf_dataset, response_metric, predictor_metric) {
+  
+  #' Create dataframe in which the number of times each predictor variables are ranked by # of times they occur in the top ten of each fish metric based on %IncMSE.
+  #'
+  #' @param rf_dataset A dataframe with at least 4 collumns response metric (e.g. fish_metric),predictor metric (e.g. landscape_metric), 
+  #' percent increase in MSE (X.IncMSE), and increase in node purity (IncNodePurity), and the mtry put into the random forest (mtry)
+  #' 
+  #' 
+  #' @param response_metric this is the response variable used on the left side of the ~ in the RF. We will group by this parameter to get 
+  #' the top ten predictors per this metric. 
+  #' 
+  #' @param predictor_metric this is the independant variable used on the right side of the ~ in the RF. We will count the number of time these predictors
+  #'  are the top ten predictors per response metric. 
+  #' 
+  
+  response_metric <- enquo(response_metric)
+  predictor_metric <- enquo(predictor_metric)
+  
+  top_preditors_ranked <- rf_dataset %>% 
+    arrange(desc(X.IncMSE)) %>% 
+    group_by(!! response_metric) %>% 
+    slice(1:10) %>% 
+    ungroup() %>% 
+    group_by(!! predictor_metric) %>% 
+    summarize(count_in_top_ten = n()) %>% 
+    ungroup() %>% 
+    arrange(desc(count_in_top_ten))
+  
+  ranks <- rf_dataset %>% 
+    select(!! predictor_metric) %>% 
+    unique() %>% 
+    full_join(top_preditors_ranked) %>% 
+    replace_na(list(count_in_top_ten = 0)) %>% 
+    arrange(desc(count_in_top_ten))
+  
+  ranks
+}
+
+rf_predictors_topten <- top_ten_predictors(rf_result, fish_metric)
+rf_predictors_rank <- rank_predictors(rf_result, fish_metric, landscape_metric)
 
 
 #### Plot Important Variables ####
