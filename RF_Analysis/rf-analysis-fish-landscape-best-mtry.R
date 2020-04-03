@@ -3,18 +3,19 @@ library(tree)
 library(VSURF)
 library(randomForest)
 
-## The path for mapping network drives like Bison are not the same in Windows as MacOS so define the network_prefix based on which computer you are using. 
+## The path for mapping network drives like Bison are not the same in Windows & MacOS so define the network_prefix based on which computer you are using. 
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
 ## Analysis folder is the fold for saving _this_ particular run
-analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo3"
+analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo4"
 
 #### Random Forest using best mtry ####
 
 # Load in one file with all of your sample ID, response variables, predictor variables in one df
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
-# metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.xlsx"), sheet = 2)
+
+# Load a list of your response variables with their best mtry. This is the result from "rf-analysis-all-fish-landscape.R"
 metrics_list <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311_bestmtry.csv"))
 metrics_list <- metrics_list %>% as.matrix() 
 
@@ -29,7 +30,7 @@ attach(metrics_envi.dat)
 ## Setting the seed before the rf allows you to get the same randomness every time. 
 set.seed(2020)
 
-resultslist = list()
+rf_list = list()
 
 for (i in 1:nrow(metrics_list))
 {
@@ -61,19 +62,17 @@ for (i in 1:nrow(metrics_list))
     imp_fish_rf$fish_metric <- paste(metrics_list[i,1])
     imp_fish_rf$mtry <- j
     
-    resultslist[[i]] <- imp_fish_rf
-    # write.csv(imp_fish_rf, paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".csv"), row.names = T)
+    rf_list[[i]] <- imp_fish_rf
 }
 
-
-
-rf_result <- do.call(rbind, resultslist)
-write.csv(rf_result, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200403.csv"), na= "", row.names = F)
-rf_result$landscape_metric <- as.factor(rf_result$landscape_metric)
-rf_result$fish_metric<- as.factor(rf_result$fish_metric)
+rf_result <- dplyr::bind_rows(rf_list)
 
 # if you attach it is good principle to detach before moving on to other analyses
 detach(metrics_envi.dat)
+
+write.csv(rf_result, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200403.csv"), na= "", row.names = F)
+rf_result$landscape_metric <- as.factor(rf_result$landscape_metric)
+rf_result$fish_metric<- as.factor(rf_result$fish_metric)
 
 ######### RF Summaries ##########
 # TODO remove these later and replace with functions.
