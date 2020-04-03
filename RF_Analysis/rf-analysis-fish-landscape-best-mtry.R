@@ -69,17 +69,14 @@ for (i in 1:nrow(metrics_list))
 
 rf_result <- do.call(rbind, resultslist)
 write.csv(rf_result, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200403.csv"), na= "", row.names = F)
-
-# if you attach it is good principle to detach
-detach(metrics_envi.dat)
-
-#TODO can you append each of the .csvs above to each other in a loop in order to avoid the step below that combines them all anyway?
-
-######### Create best mtry .CSV files ##########
-library(tidyverse)
-
 rf_result$landscape_metric <- as.factor(rf_result$landscape_metric)
 rf_result$fish_metric<- as.factor(rf_result$fish_metric)
+
+# if you attach it is good principle to detach before moving on to other analyses
+detach(metrics_envi.dat)
+
+######### RF Summaries ##########
+# TODO remove these later and replace with functions.
 
 rf_top <- rf_result %>% 
   arrange(desc(X.IncMSE)) %>% 
@@ -106,11 +103,9 @@ library(docstring)
 top_ten_predictors <- function(rf_dataset, response_metric) {
   
   #' Create dataframe in which landscape predictors are ranked by # of times they occur in the top ten of each fish metric based on %IncMSE.
-  #'
   #' 
   #' @param rf_dataset A dataframe with at least 4 collumns response metric (e.g. fish_metric),predictor metric (e.g. landscape_metric), 
   #' percent increase in MSE (X.IncMSE), and increase in node purity (IncNodePurity), and the mtry put into the random forest (mtry)
-  #' 
   #' 
   #' @param response_metric this is the response variable used on the left side of the ~ in the RF. We will group by this parameter to get 
   #' the top ten predictors per this metric. 
@@ -132,13 +127,11 @@ rank_predictors <- function(rf_dataset, response_metric, predictor_metric) {
   #' @param rf_dataset A dataframe with at least 4 collumns response metric (e.g. fish_metric),predictor metric (e.g. landscape_metric), 
   #' percent increase in MSE (X.IncMSE), and increase in node purity (IncNodePurity), and the mtry put into the random forest (mtry)
   #' 
-  #' 
   #' @param response_metric this is the response variable used on the left side of the ~ in the RF. We will group by this parameter to get 
   #' the top ten predictors per this metric. 
   #' 
   #' @param predictor_metric this is the independant variable used on the right side of the ~ in the RF. We will count the number of time these predictors
   #'  are the top ten predictors per response metric. 
-  #' 
   
   response_metric <- enquo(response_metric)
   predictor_metric <- enquo(predictor_metric)
