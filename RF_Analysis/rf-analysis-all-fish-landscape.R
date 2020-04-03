@@ -6,25 +6,28 @@ library(randomForest)
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
-####### The metrics data set is a combined matrix of all fish metrics and all landscape metrics. 
+####### The metrics data set is a combined df of all fish metrics and all landscape metrics. 
 
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
 
 rural_metrics_envi.dat <- metrics_envi.dat %>%
   filter(w_urban < 0.02)
 
+## If you pull in all of your predictor and response variables as one df then you must attach them in order to call them by name like "Metric~link+dlink+c_order"
+## otherwise you must 
 attach(rural_metrics_envi.dat)
 
-response_metrics <- metrics_envi.dat   %>% 
+
+response_metrics <- metrics_envi.dat %>% 
   select(5:74) %>% 
   names() %>% 
   as.matrix()
 
-#### The metrics list file must be a matrix in order to use it in the loop in this way
-#### try to add data to the RF command in order to get around the "attach" function
-# for (variable in vector) {
-#   
-# }
+
+## The metrics list file must be a matrix in order to use it in the loop in the way this loop was written
+## The following loop will take ~2 hours to complete given the number of response variable you are cycling though 
+## and the number of mtrys (8) that you need to cycle each of the response variables through. 
+
 
 sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200317.txt"))
 
@@ -34,9 +37,9 @@ for (i in response_metrics)
   for (j in 1:8)
   {
     
-    Metric<-get(paste(i))
+    Metric <- get(paste(i))
     
-    Metric.rf<-randomForest(Metric~link+dlink+c_order+dorder+wt_total_sqme+
+    Metric.rf <- randomForest(Metric~link+dlink+c_order+dorder+wt_total_sqme+
                             wt_gdd+wt_jul_mnx+wt_prec+
                             c_br50+c_br100+c_brg100+wt_br50+wt_br100+wt_brg100+
                             wt_br_carbonate+wt_br_sandstone+wt_br_shale+wt_rocky+wt_alluvium_fluvial+wt_coarse_moraine+wt_coarse+wt_colluvium+wt_dune+
@@ -48,11 +51,11 @@ for (i in response_metrics)
                             w_crepcrp_percent+w_hel_percent, 
                             ntree=5000,importance=T, mtry=j)
     
-    R_value<-Metric.rf$rsq[5000]
+    R_value <- Metric.rf$rsq[5000]
     
-    A<-c(i,j,R_value)
+    A <- c(i,j,R_value)
     
-    print (A)
+    print(A)
     
   }
 }
@@ -68,9 +71,13 @@ for (i in response_metrics)
 }
 
 #### Find best mtry per metric####
+
+## Read in the .txt that was created from the full loop of mtrys 1:8, all response metrics (fish metrics) and  predictor variables (landscape and geology)
 rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.txt"),
                         quote = "\"", col.names = c("x","metric", "mtry", "rsq"))
 
+## Choose the best mtry
+## Per each response metric look at when the change in rsq value is <0.01 from one mtry to another then pick the lowest m try when the change in rsq is <0.01
 rf_bestmtry <- rf_result %>% 
   select(-c(x)) %>% 
   group_by(metric) %>% 
@@ -82,4 +89,8 @@ rf_bestmtry <- rf_result %>%
   summarize(mtry = min(mtry)) %>% 
   ungroup()
 
+## Save the best mtrys for later
+write_csv(rf_bestmtry, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311_bestmtry.csv"))
+
+## If you want to feed it into 'rf-analysis-fish-landscape-best-mtry.R' now
 metrics_list <- rf_bestmtry

@@ -12,10 +12,11 @@ analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/RF_
 
 #### Random Forest using best mtry ####
 
+# Load in one file with all of your sample ID, response variables, predictor variables in one df
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
-# metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.xlsx"), sheet = 2)
+# metrics_list <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.xlsx"), sheet = 2)
 metrics_list <- metrics_list %>% as.matrix() 
-attach(metrics_envi.dat)
+# attach(metrics_envi.dat)
 
 # rural_metrics_envi.dat <- metrics_envi.dat %>% 
 #   filter(w_urban <0.02)
@@ -55,7 +56,7 @@ for (i in 1:nrow(metrics_list))
     
     write.csv(imp_fish_rf, paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".csv"), row.names = T)
 }
-
+#TODO can you append each of the .csvs above to each other in a loop in order to avoid the step below that combines them all anyway?
 
 ######### Create best mtry .CSV files ##########
 library(tidyverse)
