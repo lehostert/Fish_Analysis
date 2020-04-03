@@ -167,17 +167,6 @@ rf_predictors_topten <- top_ten_predictors(rf_result, fish_metric)
 rf_predictors_rank <- rank_predictors(rf_result, fish_metric, landscape_metric)
 
 
-#### Plot Important Variables ####
-
-##Partial Dependancy Plots looping over variable to create for all variables. Remember y-values
-for (habitat_feature in seq_along(habitat_list)) {
-  file_out <- paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_PP_", habitat_list[habitat_feature], ".pdf")
-  pdf(file_out)
-  partialPlot(fish_RF1, habitat.df, habitat_list[habitat_feature], main = paste("Partial Dependancy Plot on", habitat_list[habitat_feature]), xlab = paste(habitat_list[habitat_feature]))
-  dev.off()
-}
-
-#PLOT YOUR FORESTS IMPORTANT VARIABLES
-pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_VariableImportance.pdf"), width = 9)
-varImpPlot(fish_RF2)
-dev.off()
+#### Next Steps ####
+# TODO reduce the number of fish metrics so that you have a smaller number of interested/ "good" response variables
+# TODO Partial dependancy plots of those metrics with all of the interesting "good" response variables
