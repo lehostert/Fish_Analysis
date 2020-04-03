@@ -6,33 +6,40 @@ library(randomForest)
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
-### This analysis is based off of the environmental variables from 
-
-####### The metrics data set
+####### The metrics data set is a combined df of all fish metrics and all landscape metrics. 
 
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
-attach(metrics_envi.dat)
-metrics_list_LEH <- metrics_envi.dat   %>% 
+
+rural_metrics_envi.dat <- metrics_envi.dat %>%
+  filter(w_urban < 0.02)
+
+## If you pull in all of your predictor and response variables as one df then you must attach them in order to call them by name like "Metric~link+dlink+c_order"
+## otherwise you must 
+attach(rural_metrics_envi.dat)
+
+
+response_metrics <- metrics_envi.dat %>% 
   select(5:74) %>% 
   names() %>% 
   as.matrix()
-#### This file must be a matrix in order to use it in the loop
-#### try to add data to the RF command in order to get around the "attach" function
-# for (variable in vector) {
-#   
-# }
 
-sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200309.txt"))
 
-for (i in metrics_list_LEH)
+## The metrics list file must be a matrix in order to use it in the loop in the way this loop was written
+## The following loop will take ~2 hours to complete given the number of response variable you are cycling though 
+## and the number of mtrys (8) that you need to cycle each of the response variables through. 
+
+
+sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200317.txt"))
+
+for (i in response_metrics)
   
 {
   for (j in 1:8)
   {
     
-    Metric<-get(paste(i))
+    Metric <- get(paste(i))
     
-    Metric.rf<-randomForest(Metric~link+dlink+c_order+dorder+wt_total_sqme+
+    Metric.rf <- randomForest(Metric~link+dlink+c_order+dorder+wt_total_sqme+
                             wt_gdd+wt_jul_mnx+wt_prec+
                             c_br50+c_br100+c_brg100+wt_br50+wt_br100+wt_brg100+
                             wt_br_carbonate+wt_br_sandstone+wt_br_shale+wt_rocky+wt_alluvium_fluvial+wt_coarse_moraine+wt_coarse+wt_colluvium+wt_dune+
@@ -44,11 +51,11 @@ for (i in metrics_list_LEH)
                             w_crepcrp_percent+w_hel_percent, 
                             ntree=5000,importance=T, mtry=j)
     
-    R_value<-Metric.rf$rsq[5000]
+    R_value <- Metric.rf$rsq[5000]
     
-    A<-c(i,j,R_value)
+    A <- c(i,j,R_value)
     
-    print (A)
+    print(A)
     
   }
 }
@@ -58,37 +65,32 @@ sink()
 list()
 
 
-for (i in metrics_list_LEH)
+for (i in response_metrics)
 {
   print(i)
 }
 
-#### Random Forest ####
+#### Find best mtry per metric####
 
-set.seed(2020)
+## Read in the .txt that was created from the full loop of mtrys 1:8, all response metrics (fish metrics) and  predictor variables (landscape and geology)
+rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.txt"),
+                        quote = "\"", col.names = c("x","metric", "mtry", "rsq"))
 
+## Choose the best mtry
+## Per each response metric look at when the change in rsq value is <0.01 from one mtry to another then pick the lowest m try when the change in rsq is <0.01
+rf_bestmtry <- rf_result %>% 
+  select(-c(x)) %>% 
+  group_by(metric) %>% 
+  arrange(mtry, .by_group = TRUE) %>% 
+  mutate(
+    diff = round(lead(rsq)-rsq, 4)
+  ) %>% 
+  filter(diff <= 0.01) %>% 
+  summarize(mtry = min(mtry)) %>% 
+  ungroup()
 
-fish_metric <- "sensptax"
-fish_RF <- randomForest(fish.df$sensptax~., data = habitat.df, na.action = na.omit, ntree= 5000, mtry=4, importance= T)
+## Save the best mtrys for later
+write_csv(rf_bestmtry, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311_bestmtry.csv"))
 
-fish_RF
-imp_fish_RF <-importance(fish_RF)
-habitat_list <- rownames(imp_fish_RF) 
-
-imp_fish_RF <-data.frame(imp_fish_RF)
-
-# Partial Dependancy Plots looping over variable to create for all variables. 
-# Remember y-values 
-for (habitat_feature in seq_along(habitat_list)) {
-  file_out <- paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_PP_", habitat_list[habitat_feature], ".pdf")
-  pdf(file_out)
-  partialPlot(fish_RF1, habitat.df, habitat_list[habitat_feature], main = paste("Partial Dependancy Plot on", habitat_list[habitat_feature]), xlab = paste(habitat_list[habitat_feature]))
-  dev.off()
-}
-
-#PLOT YOUR FORESTS IMPORTANT VARIABLES
-pdf(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF_VariableImportance.pdf"), width = 9)
-varImpPlot(fish_RF2)
-dev.off()
-
-#
+## If you want to feed it into 'rf-analysis-fish-landscape-best-mtry.R' now
+metrics_list <- rf_bestmtry

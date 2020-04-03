@@ -9,6 +9,7 @@ RT <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP
 R <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_RIPARIAN.csv"))
 C <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_CHANNEL.csv"))
 # k <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PU_Gaps_size_and_CRP_classes.csv"))
+## Please do not use "k" its is an incomplete list. Saved here to be able to go back and check the differences later. 
 hel <- read_csv(file = "~/ArcGIS/Projects/CREP/HEL_Soils_KaskLocalCatchment.csv")
 kasky_Area <- read_csv(file = "~/ArcGIS/Projects/CREP/KaskLocalCatchments_w_Area.csv")
 CRP <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Kasky_CRP_Area.csv"))
