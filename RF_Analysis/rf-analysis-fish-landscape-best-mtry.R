@@ -8,7 +8,7 @@ network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
 ## Analysis folder is the fold for saving _this_ particular run
-analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_redo4"
+analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry"
 
 #### Random Forest using best mtry ####
 
@@ -21,11 +21,12 @@ metrics_list <- metrics_list %>% as.matrix()
 
 ## If you do not attach your data the "get()" function will not work in the loop as written below. 
 ## get() actually grabs the value of a named object so it grabs all of the values associated with whatever is your i-th metric in the metric list
-## can can specify the environment in get() but it seems like attaching is easier.
-attach(metrics_envi.dat)
+## You can specify the environment in get() and possibly be able to work around the attached fucntion but how to do that is not obvious.
 
-# rural_metrics_envi.dat <- metrics_envi.dat %>% 
-#   filter(w_urban <0.02)
+rural_metrics_envi.dat <- metrics_envi.dat %>% 
+  filter(w_urban <0.02)
+
+attach(rural_metrics_envi.dat)
 
 ## Setting the seed before the rf allows you to get the same randomness every time. 
 set.seed(2020)
@@ -50,7 +51,7 @@ for (i in 1:nrow(metrics_list))
                               bigriver+damdwl+damdw+damupl+damup+missi+pond+pond_area+pondwl+pondwa+ponddw+pondupl+pondupa+pondup+
                               sinuous+w_total_sqm+w_slope+wt_slope+gradient+
                               w_crepcrp_percent+w_hel_percent, 
-                              data = metrics_envi.dat, na.action = na.omit, ntree=5000,importance=T, mtry=j)
+                              data = rural_metrics_envi.dat, na.action = na.omit, ntree=5000,importance=T, mtry=j)
     
     pdf(paste0(network_prefix, analysis_folder,"/fish_RF_VarImportance_",metric_name, ".pdf"), width = 9)
     varImpPlot(fish.rf)  
@@ -68,14 +69,14 @@ for (i in 1:nrow(metrics_list))
 rf_result <- dplyr::bind_rows(rf_list)
 
 # if you attach it is good principle to detach before moving on to other analyses
-detach(metrics_envi.dat)
+detach(rural_metrics_envi.dat)
 
 write.csv(rf_result, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200403.csv"), na= "", row.names = F)
 rf_result$landscape_metric <- as.factor(rf_result$landscape_metric)
 rf_result$fish_metric<- as.factor(rf_result$fish_metric)
 
 ######### RF Summaries ##########
-# TODO remove these later and replace with functions.
+# TODO remove these later because they are replaced with functions in the next section.
 
 rf_top <- rf_result %>% 
   arrange(desc(X.IncMSE)) %>% 

@@ -29,7 +29,7 @@ response_metrics <- metrics_envi.dat %>%
 ## and the number of mtrys (8) that you need to cycle each of the response variables through. 
 
 
-sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200317.txt"))
+sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.txt"))
 
 for (i in response_metrics)
   
@@ -92,5 +92,5 @@ rf_bestmtry <- rf_result %>%
 ## Save the best mtrys for later
 write_csv(rf_bestmtry, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311_bestmtry.csv"))
 
-## If you want to feed it into 'rf-analysis-fish-landscape-best-mtry.R' now
-metrics_list <- rf_bestmtry
+## If you want to feed it into 'rf-analysis-fish-landscape-best-mtry.R' run this code below
+# metrics_list <- rf_bestmtry
