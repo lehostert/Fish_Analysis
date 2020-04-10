@@ -8,36 +8,46 @@ network_prefix <- "//INHS-Bison"
 ## Analysis folder is the fold for saving _this_ particular run
 analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/summary-plots"
 
-#compare CRP/CREP percentages
-kasky_attributes <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics_revised.csv"))
-paired_crep <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PairedSites_Attributes_LEH.csv"))
-bm_crep <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PU_Gaps_size_and_CRP_classes.csv"))
+#load data 
+fish <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"))
+paired_crep <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PairedSites_Attributes_LEH.csv"))
+sites_list <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Site_List_2013-2019.csv"))
 
-names(kasky_attributes) <- stringr::str_to_lower(names(kasky_attributes))
-leh <- kasky_attributes %>%
-  select(pu_gap_code, w_crepcrp_percent)
+names(paired_crep) <- stringr::str_to_lower(names(paired_crep))
+names(sites_list) <- stringr::str_to_lower(names(sites_list))
 
-bam <- bm_crep %>%
-  select(pu_gap_code, prop_local_CRP)
-
-compare <- bam %>% 
-  full_join(leh, by = 'pu_gap_code')
-
-compare <- compare %>% 
-  mutate(diff = prop_local_CRP - w_crepcrp_percent)
-
-## cut down paired site
+## clean up down paired site
 
 paired_list <- paired_crep %>% 
-  rename(pair.class = CRP.Class, pair_no = Pair) %>% 
-  select(pu_gap_code, pair_no, pair.class) %>% 
+  rename(pair_class = crp_class, pair_no = pair) %>% 
+  select(pu_gap_code, pair_no, pair_class) %>% 
   drop_na()
 
-# Load in one file with all of your sample ID, response variables, predictor variables in one df
-fish <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"))
+# Combine data frames
+fish$reach_name <- str_replace_all(fish$reach_name, " ", "")
 
-fish_pair <- fish %>%
+fish_site_type <- fish %>%
   filter(data_source == "crep_monitoring") %>% 
-  full_join(paired_list)
+  left_join(sites_list) %>% 
+  select(-stream_name) %>% 
+  left_join(paired_list) 
+
+fish_site_type$pair_class<- ifelse(fish_site_type$site_type != "paired", NA, fish_site_type$pair_class)
+fish_site_type$pair_no<- ifelse(fish_site_type$site_type != "paired", NA, fish_site_type$pair_no)
+
+# test <- fish_site_type %>% 
+#   select(site_id, pu_gap_code, reach_name, event_date, site_type, pair_class, pair_no)
 
 # summary(fish)
+
+#### Plots ####
+
+# Shannon Richness - Paired high low
+# Shannon Richness - Random Crep %
+# Shannon Richness - CRP Percent
+
+# tolerance values - Paired high low
+# tolerance values - Random Crep %
+# tolerance values - CRP Percent# Shannon Richness - Paired high low
+
+ggplot2::
