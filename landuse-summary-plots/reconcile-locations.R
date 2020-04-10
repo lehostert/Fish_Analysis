@@ -6,9 +6,7 @@ sites_19 <- readxl::read_xlsx(path = paste0(network_prefix,"/ResearchData/Groups
 
 sites_18$Reach_Name <- str_replace_all(sites_18$Reach_Name, " ", "")
 
-# sites_18 <- sites_18 %>% 
-#   rename(old_reach_name = Reach_Name, Reach_Name = reach_name_new)
-
+### Understand what is going on
 sites_18_name <- sites_18 %>% 
   select(PU_Gap_Code, Reach_Name)
 
@@ -37,7 +35,18 @@ combined_simple$type_same <- combined_simple$Site_Type.x == combined_simple$Site
 combined_simple_filt <- combined_simple %>% 
   filter(Lat_same == "FALSE")
 
+## keep all db version
+sites <- sites_18 %>% 
+  full_join(sites_19, by = c("PU_Gap_Code", "Reach_Name")) %>% 
+  mutate(Site_Type = coalesce(Site_Type.x, Site_Type.y)) %>% 
+  select(PU_Gap_Code, Reach_Name, Site_Type)
 
+#Update db version with 
 library(data.table)
-sites <- sites_18
-sites[sites_19, on=.(Reach_Name), c("L", "N"):=.(i.L, i.N)][]
+site_test <- sites_18
+setDT(site_test)[setDT(sites_19), on= c("PU_Gap_Code","Reach_Name"), c("Latitude", "Longitude", "Stream_Name","Site_Type"):=.(i.Latitude, i.Longitude, i.Stream_Name, i.Site_Type)][]
+ 
+site_test_final <- full_join(site_test, sites_19) %>% 
+  select(PU_Code, Gap_Code, PU_Gap_Code, Reach_Name, Latitude, Longitude, Stream_Name, Site_Type)
+
+write_csv(site_test_final, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Site_List_2013-2019.csv"))
