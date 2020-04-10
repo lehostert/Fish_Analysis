@@ -50,3 +50,24 @@ site_test_final <- full_join(site_test, sites_19) %>%
   select(PU_Code, Gap_Code, PU_Gap_Code, Reach_Name, Latitude, Longitude, Stream_Name, Site_Type)
 
 write_csv(site_test_final, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Site_List_2013-2019.csv"))
+
+
+####
+kasky_attributes <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics_revised.csv"))
+paired_crep <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PairedSites_Attributes_LEH.csv"))
+bm_crep <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/PU_Gaps_size_and_CRP_classes.csv"))
+
+## Compare CREP/CRP with BMetzke CRP
+leh <- kasky_attributes %>%
+  select(pu_gap_code, w_crepcrp_percent)
+
+bam <- bm_crep %>%
+  select(pu_gap_code, prop_local_CRP)
+
+compare <- bam %>%
+  full_join(leh, by = 'pu_gap_code')
+
+compare <- compare %>%
+  mutate(diff = prop_local_CRP - w_crepcrp_percent)
+
+
