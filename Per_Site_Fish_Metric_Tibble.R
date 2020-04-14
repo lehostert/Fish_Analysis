@@ -286,10 +286,10 @@ fecundity_by_total_length <- function(counts_and_traits) {
 #TODO Add checker here that looks for the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
 
 ## For CREP data
-fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
+# fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
 
 ## For IDNR Basin data
-# fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_Drake_1991-2007.csv"), na = "", stringsAsFactors = F)
+fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_Drake_1991-2007.csv"), na = "", stringsAsFactors = F)
 
 
 ## For IDNR Basin Data ##
@@ -298,18 +298,19 @@ fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP
 
 #### Create unique Site_ID per sample if this has not already been created ####
 ## For CREP and IDNR Basin data
-fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
-# fish_data$Event_Date <- as.Date(fish_data$Event_Date)
+# fish_data$Event_Date <- as.Date(fish_data$Event_Date, "%m/%d/%Y")
+fish_data$Event_Date <- as.Date(fish_data$Event_Date)
+
 fish_data$Site_ID <-paste(str_replace_all(fish_data$Reach_Name, "[:blank:]", ""), str_replace_all(fish_data$Event_Date,"-",""), sep = "_")
 
 #### Add fish traits ####
 # Before moving on the fish count data must have the following 3 fields: "Site_ID" "Fish_Species_Code" and "Fish_Species_Count"
-names(fish_data)
-
-id_table <- fish_data %>% 
-  select(Site_ID, pugap_code, Reach_Name, Event_Date) %>% 
-  unique()
-write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
+# names(fish_data)
+# 
+# id_table <- fish_data %>% 
+#   select(Site_ID, pugap_code, Reach_Name, Event_Date) %>% 
+#   unique()
+# write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
 # write_csv(id_table, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_Drake_1991-2007.csv"))
 
 # Add traits to fish count data
@@ -377,10 +378,10 @@ site_metric_tibble$NATIVPTAX <- round(site_metric_tibble$NATIVNTAX/site_metric_t
 site_metric_tibble$NATIVNIND <- num_ind_by_trait(fish_table, Nonnative, '0')
 site_metric_tibble$NATIVPIND <- round(site_metric_tibble$NATIVNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$INTNTAX <- num_taxa_by_trait(fish_table, Native_Intolerant, '1')
-site_metric_tibble$INTPTAX <- round(site_metric_tibble$INTNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$INTNIND <- num_ind_by_trait(fish_table, Native_Intolerant, '1')
-site_metric_tibble$INTPIND <- round(site_metric_tibble$INTNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+site_metric_tibble$NATINTNTAX <- num_taxa_by_trait(fish_table, Native_Intolerant, '1')
+site_metric_tibble$NATINTPTAX <- round(site_metric_tibble$NATINTNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$NATINTNIND <- num_ind_by_trait(fish_table, Native_Intolerant, '1')
+site_metric_tibble$NATINTPIND <- round(site_metric_tibble$NATINTNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 ## Tolerance traits
 site_metric_tibble$TOLRNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'TOLERANT')
@@ -388,15 +389,15 @@ site_metric_tibble$TOLRPTAX <- round(site_metric_tibble$TOLRNTAX/site_metric_tib
 site_metric_tibble$TOLRNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'TOLERANT')
 site_metric_tibble$TOLRPIND <- round(site_metric_tibble$TOLRNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
-site_metric_tibble$SENSNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'INTOLERANT')
-site_metric_tibble$SENSPTAX <- round(site_metric_tibble$SENSNTAX/site_metric_tibble$RICHNESS, digits = 3)
-site_metric_tibble$SENSNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'INTOLERANT')
-site_metric_tibble$SENSPIND <- round(site_metric_tibble$SENSNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+site_metric_tibble$INTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'INTOLERANT')
+site_metric_tibble$INTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$INTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'INTOLERANT')
+site_metric_tibble$INTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$MODTOLNTAX <- num_taxa_by_trait(fish_table, Tolerance_Class, 'MODERATE')
-site_metric_tibble$MODTOLPTAX <- round(site_metric_tibble$INTOLNTAX/site_metric_tibble$RICHNESS, digits = 3)
+site_metric_tibble$MODTOLPTAX <- round(site_metric_tibble$MODTOLNTAX/site_metric_tibble$RICHNESS, digits = 3)
 site_metric_tibble$MODTOLNIND <- num_ind_by_trait(fish_table, Tolerance_Class, 'MODERATE')
-site_metric_tibble$MODTOLPIND <- round(site_metric_tibble$INTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
+site_metric_tibble$MODTOLPIND <- round(site_metric_tibble$MODTOLNIND/site_metric_tibble$INDIVIDUALS, digits = 3)
 
 site_metric_tibble$DOTOLTAX <- average_by_trait(fish_table, Dissolved_Oxygen)
 site_metric_tibble$DOTOLIND <- weighted_average_by_trait(fish_table, Dissolved_Oxygen)
@@ -557,5 +558,5 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
-write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_final.csv"), na = "0", row.names = F)
-# write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_final.csv"), na = "0", row.names = F)
+# write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_rename.csv"), na = "0", row.names = F)
+write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_rename.csv"), na = "0", row.names = F)
