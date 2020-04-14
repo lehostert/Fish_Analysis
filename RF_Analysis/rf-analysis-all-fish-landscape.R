@@ -18,7 +18,7 @@ rural_metrics_envi.dat <- metrics_envi.dat %>%
 attach(rural_metrics_envi.dat)
 
 
-response_metrics <- metrics_envi.dat %>% 
+response_metrics <- rural_metrics_envi.dat %>% 
   select(5:74) %>% 
   names() %>% 
   as.matrix()
@@ -81,10 +81,10 @@ rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaska
 rf_bestmtry <- rf_result %>% 
   select(-c(x)) %>% 
   group_by(metric) %>% 
-  arrange(mtry, .by_group = TRUE) %>% 
+  dplyr::arrange(mtry, .by_group = TRUE) %>% 
   mutate(
     diff = round(lead(rsq)-rsq, 4)
-  ) %>% 
+    ) %>% 
   filter(diff <= 0.01) %>% 
   summarize(mtry = min(mtry)) %>% 
   ungroup()
