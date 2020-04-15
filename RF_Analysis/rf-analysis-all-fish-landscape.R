@@ -86,7 +86,10 @@ rf_bestmtry <- rf_result %>%
     diff = round(lead(rsq)-rsq, 4)
     ) %>% 
   filter(diff <= 0.01) %>% 
-  summarize(mtry = min(mtry)) %>% 
+  summarize(best_mtry = min(mtry)) 
+
+## WTF is wrong with this sections fo the script it is no longer treating these as grouped even though they are from earlier. 
+%>% 
   ungroup()
 
 ## Save the best mtrys for later

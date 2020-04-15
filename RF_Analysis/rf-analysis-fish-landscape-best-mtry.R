@@ -8,7 +8,7 @@ network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
 ## Analysis folder is the fold for saving _this_ particular run
-analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry"
+analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_best_mtry_rural"
 
 #### Random Forest using best mtry ####
 
@@ -16,7 +16,7 @@ analysis_folder <- "/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fis
 metrics_envi.dat <- read.csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics.csv"), row.names = "site_id")
 
 # Load a list of your response variables with their best mtry. This is the result from "rf-analysis-all-fish-landscape.R"
-metrics_list <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311_bestmtry.csv"))
+metrics_list <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200414_rural_bestmtry.csv"))
 metrics_list <- metrics_list %>% as.matrix() 
 
 ## If you do not attach your data the "get()" function will not work in the loop as written below. 
@@ -71,31 +71,31 @@ rf_result <- dplyr::bind_rows(rf_list)
 # if you attach it is good principle to detach before moving on to other analyses
 detach(rural_metrics_envi.dat)
 
-write.csv(rf_result, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200403.csv"), na= "", row.names = F)
+write.csv(rf_result, file= paste0(network_prefix, analysis_folder,"/fish_landscape_bestmtry_RF_VarImportance_20200414_rural.csv"), na= "", row.names = F)
 rf_result$landscape_metric <- as.factor(rf_result$landscape_metric)
 rf_result$fish_metric<- as.factor(rf_result$fish_metric)
 
 ######### RF Summaries ##########
 # TODO remove these later because they are replaced with functions in the next section.
-
-rf_top <- rf_result %>% 
-  arrange(desc(X.IncMSE)) %>% 
-  group_by(fish_metric) %>% 
-  slice(1:10) %>% 
-  ungroup()
-
-top_preditors_ranked <- rf_top %>% 
-  group_by(landscape_metric) %>% 
-  summarize(count = n()) %>% 
-  ungroup() %>% 
-  arrange(desc(count))
-
-predictor_ranks <- rf_result %>% 
-  select(landscape_metric) %>% 
-  unique() %>% 
-  full_join(top_preditors_ranked) %>% 
-  replace_na(list(count = 0)) %>% 
-  arrange(desc(count))
+# 
+# rf_top <- rf_result %>% 
+#   arrange(desc(X.IncMSE)) %>% 
+#   group_by(fish_metric) %>% 
+#   slice(1:10) %>% 
+#   ungroup()
+# 
+# top_preditors_ranked <- rf_top %>% 
+#   group_by(landscape_metric) %>% 
+#   summarize(count = n()) %>% 
+#   ungroup() %>% 
+#   arrange(desc(count))
+# 
+# predictor_ranks <- rf_result %>% 
+#   select(landscape_metric) %>% 
+#   unique() %>% 
+#   full_join(top_preditors_ranked) %>% 
+#   replace_na(list(count = 0)) %>% 
+#   arrange(desc(count))
   
 #### Create functions for RF summaries ####
 library(docstring)
