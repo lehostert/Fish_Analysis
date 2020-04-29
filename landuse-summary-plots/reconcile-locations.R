@@ -53,8 +53,12 @@ sites <- sites_18 %>%
   full_join(sites_19, by = c("PU_Gap_Code", "Reach_Name")) %>% 
   mutate(Site_Type = coalesce(Site_Type.y, Site_Type.x),
          Longitude = coalesce(Longitude.y, Longitude.x),
-         Latitude = coalesce(Latitude.y, Latitude.x)) %>% 
-  select(PU_Gap_Code, Reach_Name, Site_Type)
+         Latitude = coalesce(Latitude.y, Latitude.x),
+         PU_Code = coalesce(PU_Code.x, PU_Code.y),
+         Gap_Code = coalesce(Gap_Code.x, Gap_Code.y)) %>% 
+  select(PU_Code, Gap_Code, PU_Gap_Code, Reach_Name, Latitude, Longitude, Site_Type)
+
+write_csv(sites, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Data/Data_IN/DB_Ingest/Established_Locations_2013-2019.csv"))
 
 #Update db version with data.table package. For more infromation please see: https://stackoverflow.com/questions/34438349/merge-dataframes-of-different-sizes/34438586#34438586
 
