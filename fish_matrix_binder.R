@@ -4,8 +4,8 @@ library(reshape2)
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
-crep <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_final.csv"), na = "")
-basin <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_final.csv"), na = "")
+crep <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_rename.csv"), na = "")
+basin <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_rename.csv"), na = "")
 
 id_crep <-read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
 id_basin <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_Drake_1991-2007.csv"))
@@ -52,6 +52,6 @@ kasky_aggregate <- fish_matrix_full %>%
   select(-c(Site_ID, Reach_Name, Event_Date, data_source)) %>% 
   plyr::ddply(.(pugap_code),colwise(mean))
   
-write_csv(id_key, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_site_id_key.csv"), na = ".")
-# write_csv(fish_matrix, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_final.csv"), na = ".")
-# write_csv(fish_matrix, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_full.csv"), na = ".")
+# write_csv(id_key, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_site_id_key.csv"), na = ".")
+write_csv(fish_matrix_full, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_rename.csv"), na = ".")
+# write_csv(fish_matrix_full, paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_matrix_full.csv"), na = ".")

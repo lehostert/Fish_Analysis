@@ -18,7 +18,7 @@ rural_metrics_envi.dat <- metrics_envi.dat %>%
 attach(rural_metrics_envi.dat)
 
 
-response_metrics <- metrics_envi.dat %>% 
+response_metrics <- rural_metrics_envi.dat %>% 
   select(5:74) %>% 
   names() %>% 
   as.matrix()
@@ -29,7 +29,7 @@ response_metrics <- metrics_envi.dat %>%
 ## and the number of mtrys (8) that you need to cycle each of the response variables through. 
 
 
-sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.txt"))
+sink(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200414_rural.txt"))
 
 for (i in response_metrics)
   
@@ -73,7 +73,7 @@ for (i in response_metrics)
 #### Find best mtry per metric####
 
 ## Read in the .txt that was created from the full loop of mtrys 1:8, all response metrics (fish metrics) and  predictor variables (landscape and geology)
-rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311.txt"),
+rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200414_rural.txt"),
                         quote = "\"", col.names = c("x","metric", "mtry", "rsq"))
 
 ## Choose the best mtry
@@ -81,16 +81,19 @@ rf_result <- read.table(file = paste0(network_prefix,"/ResearchData/Groups/Kaska
 rf_bestmtry <- rf_result %>% 
   select(-c(x)) %>% 
   group_by(metric) %>% 
-  arrange(mtry, .by_group = TRUE) %>% 
+  dplyr::arrange(mtry, .by_group = TRUE) %>% 
   mutate(
     diff = round(lead(rsq)-rsq, 4)
-  ) %>% 
+    ) %>% 
   filter(diff <= 0.01) %>% 
-  summarize(mtry = min(mtry)) %>% 
+  summarize(best_mtry = min(mtry)) 
+
+## WTF is wrong with this sections fo the script it is no longer treating these as grouped even though they are from earlier. 
+%>% 
   ungroup()
 
 ## Save the best mtrys for later
-write_csv(rf_bestmtry, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200311_bestmtry.csv"))
+write_csv(rf_bestmtry, path = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Metrics_RF_Result_20200414_rural_bestmtry.csv"))
 
 ## If you want to feed it into 'rf-analysis-fish-landscape-best-mtry.R' run this code below
 # metrics_list <- rf_bestmtry
