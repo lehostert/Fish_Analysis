@@ -19,11 +19,11 @@ This script reads in fish data and produces a dataframe with 110 computed fish m
 
 #### landuse_geology_metric_tibble.R
 This is a generic scrip that is the base code for simplifying landuse and geology metrics that come from the 2010 Aquatic GAP Analysis at all available scales (C- channel, R- local riparian, RT-riparian total, W- local watershed, WT- total watershed). The following scripts are scale specifici variations of the this generic script. 
- -C_landuse_geology_metric_tibble.R
- -R_landuse_geology_metric_tibble.R
- -RT_landuse_geology_metric_tibble.R
- -W_landuse_geology_metric_tibble.R
- -WT_landuse_geology_metric_tibble.R
+ - C_landuse_geology_metric_tibble.R
+ - R_landuse_geology_metric_tibble.R
+ - RT_landuse_geology_metric_tibble.R
+ - W_landuse_geology_metric_tibble.R
+ - WT_landuse_geology_metric_tibble.R
 
 #### landuse_metric_binder.R
 This script reads in landuse and geology data from mulitple Scales (C- channel, R- local riparian, RT-riparian total, W- local watershed, WT- total watershed) along with watershed level area data (CRP/CREP % and highly erodable lands) and produces a dataframe with 67 landscape and geology level variables for each PU in the Kaskaskia River Basin. The resulting dataframe are known as landuse geology metrics. 
@@ -47,7 +47,7 @@ Gets some summary stats from the RFs.
 
 1. CREP fish community samples from 2013-2019 in the Kaskaskia River Basin
 2. ~~ IDNR Basin Surveys from 1992-2007 Sourced from JStein Database ~~
-2. IDNR Kaskaskia Community Basin Surveys from 1992-2007 Sourced from YCao. Used in LDrake MS thesis. 
-3. Aquatic Gap Analysis 2010 Landuse and Geology Data (Watershed Unit Areas are also based on PU Gap Analysis)
-4. Highly Erodible Lands GIS data
-5. CREP & CRP GIS data
+3. IDNR Kaskaskia Community Basin Surveys from 1992-2007 Sourced from YCao. Used in-part LDrake MS thesis. 
+4. Aquatic Gap Analysis 2010 Landuse and Geology Data (Watershed Unit Areas are also based on PU Gap Analysis)
+5. Highly Erodible Lands GIS data (HEL Soils Data)
+6. CREP & CRP GIS data layers
