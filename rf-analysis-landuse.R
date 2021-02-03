@@ -77,7 +77,7 @@ habitat_list <- rownames(imp_fish_RF2)
 
 imp_fish_RF2 <-data.frame(imp_fish_RF2)
 
-# Partial Dependancy Plots looping over variable to create for all variables. 
+# Partial Dependency Plots looping over variable to create for all variables. 
 # Remember y-values 
 for (habitat_feature in seq_along(habitat_list)) {
   file_out <- paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/fish_RF_WT_",fish_metric,"/fish_",fish_metric, "_RF1_PP_", habitat_list[habitat_feature], ".pdf")
