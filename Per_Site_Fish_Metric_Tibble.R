@@ -12,13 +12,7 @@ library(docstring)
 
 
 #### Set up access to INHS-Bison Network Drive ####
-network_prefix <- "//INHS-Bison"
-# TODO find way to select network prefixes.
-# library(svDialogs)
-# prefix_list <- c("//INHS-Bison","/Volumes")
-# network_prefix <- svDialogs::dlg_list(prefix_list, title = "Which network prefix?", Sys.info()["user"])$res
-# select.list(prefix_list, multiple = FALSE,
-#             title = "Which Network drive prefix?", graphics = getOption("menu.graphics"))
+network_prefix <- if_else(as.character(Sys.info()["sysname"]) == "Windows", "//INHS-Bison", "/Volumes")
 
 # TODO Change instances of "Site_ID" "Fish_Species_Code" and "Fish_Species_Count" to string to lower to make more generic
 
@@ -559,4 +553,5 @@ site_metric_tibble$COSUBPIND <- round(site_metric_tibble$COSUBNIND/site_metric_t
 site_metric_tibble <- select(site_metric_tibble, -ends_with("NIND"))
 
 # write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_rename.csv"), na = "0", row.names = F)
-write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_rename.csv"), na = "0", row.names = F)
+# write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_rename.csv"), na = "0", row.names = F)
+write.csv(site_metric_tibble, file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2020.csv"), na = "0", row.names = F)
