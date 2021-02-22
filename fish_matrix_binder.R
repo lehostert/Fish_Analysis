@@ -4,10 +4,12 @@ library(reshape2)
 network_prefix <- "//INHS-Bison"
 # network_prefix <- "/Volumes"
 
-crep <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_rename.csv"), na = "")
+# crep <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2019_rename.csv"), na = "")
+crep <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_CREP_2013-2020_partial.csv"), na = "")
 basin <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/Fish_Metrics_Drake_1991-2007_rename.csv"), na = "")
 
-id_crep <-read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
+# id_crep <-read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2019.csv"))
+id_crep <-read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_CREP_2013-2020.csv"))
 id_basin <- read_csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Output/id_table_Drake_1991-2007.csv"))
 
 
@@ -21,6 +23,8 @@ fish_matrix_full <- fish_matrix %>%
   select(2,1,113,114,115,3:112)
 
 fish_matrix_full$data_source <- as.factor(fish_matrix_full$data_source)
+
+##TODO I am not sure what all of this is about. BElow
 
 pugap_unique <- fish_matrix_full %>% 
   select(pugap_code) %>% 
