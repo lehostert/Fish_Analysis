@@ -159,7 +159,7 @@ num_ind_by_trait <- function(counts_and_traits, desired_trait, value) {
   # See Hadley's vingette <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html> for more details on why enquo is necessary.
   desired_trait <- dplyr::enquo(desired_trait)
   
-  # Summarise by number of indiviudals and filter out the family of interest
+  # Summarise by number of individuals and filter out the family of interest
   n_ind_by_trait<- counts_and_traits %>% 
     dplyr::group_by(Site_ID, !!desired_trait) %>% 
     dplyr::summarise(sum(Fish_Species_Count)) %>%
@@ -283,7 +283,7 @@ fecundity_by_total_length <- function(counts_and_traits) {
 # fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2019.csv"), na = "", stringsAsFactors = F)
 
 ## For NEW CREP data
-fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2020b.csv"), na = "", stringsAsFactors = F)
+fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_CREP_2013-2020.csv"), na = "", stringsAsFactors = F)
 
 ## For IDNR Basin data
 # fish_data <- read.csv(paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/Fish_Abundance_Data_Drake_1991-2007.csv"), na = "", stringsAsFactors = F)
