@@ -43,10 +43,12 @@ fab_hab <- fish_matrix %>%
   # left_join(id_key, by = "site_id") %>% 
   left_join(habitat, by = "pu_gap_code") 
 
-fab_hab <- fab_hab %>% 
-  select(1, 112:114, 2:181)
-  # select(69, 1, 70:142, 2:68)
+# fab_hab <- fab_hab %>% 
+#   select(1, 112:114, 2:181)
+#   # select(69, 1, 70:142, 2:68)
 
+
+# Read in data from IHI from DB to give size of sampled area
 stream <- readxl::read_xlsx(path = "~/CREP/Proposals/CREP Goals/Fish_Habitat_Characteristics.xlsx")
 
 interest <- stream %>% 
