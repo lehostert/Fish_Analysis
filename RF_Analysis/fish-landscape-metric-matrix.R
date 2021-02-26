@@ -19,7 +19,7 @@ names(fish_matrix) <- str_to_lower(names(fish_matrix))
 names(id_key) <- str_to_lower(names(id_key))
 
 fish_matrix <- fish_matrix %>%
-  select(-c(data_source, catopind,	centpind,	cyprpind,	leucpind,	xenontax,	xenoptax,	xenopind,	clxpind, ictapind,	percpind,	alienntax, alienptax, alienpind,
+  select(-c(catopind,	centpind,	cyprpind,	leucpind,	xenontax,	xenoptax,	xenopind,	clxpind, ictapind,	percpind,	alienntax, alienptax, alienpind,
           nativntax,	nativptax,	nativpind, natintpind, tolrpind	,intolpind, modtolpind,	pcngospind,	pcngbhpind,	pcgsubpind,	pcnestpind,	pcbearpind,
           fspind,	lithpind,	carnpind	,invntax	,invptax	,invpind	,herbpind,	omnipind,	algpind,	plantpind,	detpind,	bentinvntax,	bentinvptax,
           bentinvpind,	cosubpind))
@@ -58,3 +58,4 @@ names(interest) <- str_to_lower(names(interest))
 fab_hab <- left_join(fab_hab, interest)
 
 write_csv(fab_hab, path = "~/CREP/Proposals/CREP Goals/kasky_fish_and_landuse_geology_metrics_20210223.csv")
+write_csv(fab_hab, path = paste0(network_prefix, "/ResearchData/Groups/Kaskaskia_Crep/Analysis/Fish/Data/kasky_fish_and_landuse_geology_metrics_20210223.csv"))
