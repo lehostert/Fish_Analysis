@@ -93,3 +93,6 @@ cor.test(df_random$w_hel_percent, df_random$dotolind, method = "pearson", conf.l
 # ____
 random <- df %>% 
   filter(crep_site_type == "random")
+
+
+landuse <- read_csv(file = paste0(network_prefix,"/ResearchData/Groups/Kaskaskia_CREP/Analysis/Fish/Data/kasky_landuse_geology_metrics_revised.csv"))
