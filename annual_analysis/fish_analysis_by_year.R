@@ -14,6 +14,8 @@ fish_df <- df %>%
   filter(individuals >19, richness > 4) %>% 
   drop_na(w_hel_percent) 
 
+response = names(fish_df)[6:76]
+expl = names(fishdf)[6:76]
 
 # fish_df$event_year <- lubridate::year(fish_df$event_date)
 
