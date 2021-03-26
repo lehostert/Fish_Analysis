@@ -66,7 +66,10 @@ fish_df %>%
   labs(x = "Year", y = "Shannon Richness", title = "Shannon Richness per CREP Monitoring All Sites")
 ggsave("richness_all_crep_sites_violin.pdf", width = 8, height = 8, path = analysis_folder, units = "in")
 
-fish_df
+### Cut down to only fish metrics ###
+
+<- fish_df %>% 
+  
 
 ## Calculate the metrics for each of the random sites and look at how those are changing throughout time. 
 ## So per year
