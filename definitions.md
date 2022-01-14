@@ -3,20 +3,6 @@
 The goal of this document is to provide the user with the definitions of each of the fish metrics used in this analysis. _this is italics_
 **this is bold**
 
-TODO: use a CSV to markdown converter to move the definitions table to this .md file
-
-| METRIC      | CATEGORY  | DEFINITION                     | Source   | Calculation Notes                                |
-|-------------|-----------|--------------------------------|----------|--------------------------------------------------|
-| INDIVIDUALS | Taxonomic | Total number of individuals    | raw data |                                                  |
-| RICHNESS    | Taxonomic | Total number of  unique taxa   | raw data | aka "SPECIES"                                    |
-| DIVERSITY   | Taxonomic | Shannon-Weiner diversity       | raw data | H via vegan package in R with diversity function |
-| EVENNESS    | Taxonomic | Evenness                       | raw data | J'= H/ln(S)                                      |
-| CATONTAX    | Taxonomic | Number of Catostomid taxa      | raw data |                                                  |
-| CATOPTAX    | Taxonomic | Percent Catostomid taxa        | raw data |                                                  |
-| CATOPIND    | Taxonomic | Percent Catostomid individuals | raw data |                                                  |
-| CENTNTAX    | Taxonomic | Number of Centrarchidae taxa   | raw data |                                                  |
-| CENTPTAX    | Taxonomic | Percent Centrarchidae taxa     | raw data |                                                  |
-
 |METRIC       |CATEGORY           |DEFINITION                                                         |Source                                                      |Calculation Notes                                                                        |
 |-------------|-------------------|-------------------------------------------------------------------|------------------------------------------------------------|-----------------------------------------------------------------------------------------|
 |INDIVIDUALS  |Taxonomic          |Total number of individuals                                        |raw data                                                    |                                                                                         |
@@ -53,18 +39,18 @@ TODO: use a CSV to markdown converter to move the definitions table to this .md 
 |NATIVNTAX    |Taxonomic          |Number of native fish taxa                                         |IL Species List                                             |                                                                                         |
 |NATIVPTAX    |Taxonomic          |Percent native fish taxa                                           |IL Species List                                             |                                                                                         |
 |NATIVPIND    |Taxonomic          |Percent native fish individuals                                    |IL Species List                                             |                                                                                         |
-|NATINTNTAX   |Taxonomic/Tolerance|Number Native-Intolerent Taxa                                      |IL Species List + USGS- Mike Meader (personal communication)|Selected for both NATIVE and INTOLERANT                                                  |
-|NATINTPTAX   |Taxonomic/Tolerance|Percent Native-Intolerent Taxa                                     |USGS- Mike Meader (personal communication)                  |                                                                                         |
-|NATINTPIND   |Taxonomic/Tolerance|Percent Native-Intolerent  individuals                             |USGS- Mike Meader (personal communication)                  |                                                                                         |
+|NATINTNTAX   |Taxonomic/Tolerance|Number Native-Intolerent Taxa                                      |IL Species List + USGS- Mike Meader (personal communication)|Selected for both NATIVE and INTOLERANT, formerly INTNTAX        |
+|NATINTPTAX   |Taxonomic/Tolerance|Percent Native-Intolerent Taxa                                     |USGS- Mike Meader (personal communication)                  |formerly INTPTAX                                                                   |
+|NATINTPIND   |Taxonomic/Tolerance|Percent Native-Intolerent  individuals                             |USGS- Mike Meader (personal communication)                  |formerly INTPTAX                                                                         |
 |TOLRNTAX     |Tolerance          |Number of tolerant taxa                                            |USGS- Mike Meader (personal communication)                  |                                                                                         |
 |TOLRPTAX     |Tolerance          |Percent tolerant taxa                                              |USGS- Mike Meader (personal communication)                  |                                                                                         |
 |TOLRPIND     |Tolerance          |Percent tolerant individuals                                       |USGS- Mike Meader (personal communication)                  |                                                                                         |
-|INTOLNTAX    |Tolerance          |Number of intolerant (sensitive) taxa                              |USGS- Mike Meader (personal communication)                  |                                                                                         |
-|INTOLPTAX    |Tolerance          |Percent intolerant (sensitive) taxa                                |USGS- Mike Meader (personal communication)                  |                                                                                         |
-|INTOLPIND    |Tolerance          |Percent intolerant (sensitive) individuals                         |USGS- Mike Meader (personal communication)                  |                                                                                         |
-|MODTOLNTAX   |Tolerance          |Number of intermediate/moderate tolerant taxa                      |USGS- Mike Meader (personal communication)                  |                                                                                         |
-|MODTOLPTAX   |Tolerance          |Percent intermediate/moderate tolerant taxa                        |USGS- Mike Meader (personal communication)                  |                                                                                         |
-|MODTOLPIND   |Tolerance          |Percent intermediate/moderate tolerant individuals                 |USGS- Mike Meader (personal communication)                  |                                                                                         |
+|INTOLNTAX    |Tolerance          |Number of intolerant (sensitive) taxa                              |USGS- Mike Meader (personal communication)                  |formerly SENSNTAX                                                                        |
+|INTOLPTAX    |Tolerance          |Percent intolerant (sensitive) taxa                                |USGS- Mike Meader (personal communication)                  |formerly SENSNTAX                                                                        |
+|INTOLPIND    |Tolerance          |Percent intolerant (sensitive) individuals                         |USGS- Mike Meader (personal communication)                  |formerly SENSNTAX                                                                        |
+|MODTOLNTAX   |Tolerance          |Number of intermediate/moderate tolerant taxa                      |USGS- Mike Meader (personal communication)                  |formerly INTOLNTAX                                                                       |
+|MODTOLPTAX   |Tolerance          |Percent intermediate/moderate tolerant taxa                        |USGS- Mike Meader (personal communication)                  |formerly INTOLNTAX                                                                       |
+|MODTOLPIND   |Tolerance          |Percent intermediate/moderate tolerant individuals                 |USGS- Mike Meader (personal communication)                  |formerly INTOLNTAX                                                                       |
 |DOTOLTAX     |Tolerance          |Average of species dissolved oxygen tolerances                     |USGS- Mike Meader (personal communication)                  |                                                                                         |
 |DOTOLIND     |Tolerance          |Weighted average dissolved oxygen tolerance based on indivdiuals   |USGS- Mike Meader (personal communication)                  |                                                                                         |
 |NO2TOLTAX    |Tolerance          |Average of species nitrate tolerances                              |USGS- Mike Meader (personal communication)                  |                                                                                         |
