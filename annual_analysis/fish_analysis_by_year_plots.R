@@ -1,3 +1,5 @@
+library(tidyverse)
+library(readr)
 library(dplyr)
 library(ggplot2)
 library(purrr)
@@ -84,8 +86,26 @@ map(r, ~boxplot_fun_phase(dat = fish_df_random, .x))
 proposal <- df %>% 
   filter(data_source == "crep_monitoring")
 
-proposal_sites <- df %>%
+proposal_sites_total <- df %>%
+  filter(data_source == "crep_monitoring") %>% 
+  select(reach_name)
+
+proposal_sites_total_unique <- df %>%
   filter(data_source == "crep_monitoring") %>% 
   select(reach_name) %>% 
   unique()
 
+proposal_sites_random_unique <- df %>%
+  filter(data_source == "crep_monitoring", crep_site_type == "random") %>% 
+  select(reach_name) %>% 
+  unique()
+
+proposal_sites_random_total <- df %>%
+  filter(data_source == "crep_monitoring", crep_site_type == "random") %>% 
+  select(reach_name, event_date) %>% 
+  group_by(lubridate::year(event_date)) %>% 
+  summarise(n = n())
+
+high_crp <- df %>%
+  filter(w_crepcrp_percent > 0.20) %>% 
+  select(reach_name, event_date, w_crepcrp_percent)
